@@ -79,10 +79,10 @@
 public Plugin:myinfo =
 {
     name = "Survivor MVP notification",
-    author = "Tabun",
+    author = "Tabun, Artifacial",
     description = "Shows MVP for survivor team at end of round",
-    version = "0.2c",
-    url = "nope"
+    version = "0.3",
+    url = "https://github.com/alexberriman/l4d2_survivor_mvp"
 };
 
 
@@ -158,9 +158,7 @@ public Native_GetMVP(Handle:plugin, numParams)
 public Native_GetMVPDmgPercent(Handle:plugin, numParams)
 {
     new client = GetNativeCell(1);
-    new Float: dmgprc;
-    
-    dmgprc = client && iTotalDamageAll > 0 ? (float(iDidDamageAll[client]) / float(iTotalDamageAll)) * 100 : 0.0;
+    new Float: dmgprc = client && iTotalDamageAll > 0 ? (float(iDidDamageAll[client]) / float(iTotalDamageAll)) * 100 : 0.0;
     return _:dmgprc;
 }
 
@@ -741,10 +739,6 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
 
 public InfectedDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    // catch amount of common killed
-    //new victimId = GetEventInt(event, "infected_id");
-    //new victimType = GetEventInt(event, "gender");
-
     new attackerId = GetEventInt(event, "attacker");
     new attacker = GetClientOfUserId(attackerId);
     
