@@ -606,11 +606,31 @@ public PrintConsoleReport(client)
 {
     
     decl String:buf[CONBUFSIZELARGE];
+
+    // This is the standard console statistics
     Format(buf, CONBUFSIZELARGE, "\n");
-    Format(buf, CONBUFSIZELARGE, "%s| Name                 | Damage   | Percent | SI Kills | Commons  | Percent | Tank   | Witch  | FF           |\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|--------------|\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s| Basic Statistics                                                                                                                |\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|------------------------------------------|\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s| Name                 | Damage   | Percent | SI Kills | Commons  | Percent | Tank   | Witch  | FF                                       |\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|------------------------------------------|\n", buf);
     Format(buf, CONBUFSIZELARGE, "%s%s", buf, sConsoleBuf);
-    Format(buf, CONBUFSIZELARGE, "%s|------------------------------------------------------------------------------------------------------------|", buf);
+    Format(buf, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|", buf);
+
+    // Track more detailed statistics
+    Format(buf, CONBUFSIZELARGE, "\n");
+    Format(buf, CONBUFSIZELARGE, "%s| Detailed Stats (for information on each stat see http://)                                                                              |\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | Damage   | Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops  | Skeets  |\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|", buf);
+
+    // Track tank statistics
+    Format(buf, CONBUFSIZELARGE, "\n");
+    Format(buf, CONBUFSIZELARGE, "%s| Tank stats - Damage dealt while tank was up                                                                                     |\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|----------|------------------------------------|\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked   | Pinned                             |\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|----------|------------------------------------|\n", buf);
+    Format(buf, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|", buf);
     
     if (!client) {
         PrintToConsoleAll("%s", buf);
