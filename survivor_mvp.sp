@@ -160,11 +160,7 @@ public Native_GetMVPDmgPercent(Handle:plugin, numParams)
     new client = GetNativeCell(1);
     new Float: dmgprc;
     
-    if (client && iTotalDamageAll > 0) {
-        dmgprc = (float(iDidDamageAll[client]) / float(iTotalDamageAll)) * 100;
-    } else {
-        dmgprc = 0.0;
-    }
+    dmgprc = client && iTotalDamageAll > 0 ? (float(iDidDamageAll[client]) / float(iTotalDamageAll)) * 100 : 0.0;
     return _:dmgprc;
 }
 
@@ -172,13 +168,7 @@ public Native_GetMVPDmgPercent(Handle:plugin, numParams)
 public Native_GetMVPDmgCount(Handle:plugin, numParams)
 {
     new client = GetNativeCell(1);
-    new dmg;
-    
-    if (client && iTotalDamageAll > 0) {
-        dmg = iDidDamageAll[client];
-    } else {
-        dmg = 0;
-    }
+    new dmg = client && iTotalDamageAll > 0 ? iDidDamageAll[client] : 0;
     return _:dmg;
 }
 
@@ -186,13 +176,7 @@ public Native_GetMVPDmgCount(Handle:plugin, numParams)
 public Native_GetMVPKills(Handle:plugin, numParams)
 {
     new client = GetNativeCell(1);
-    new dmg;
-    
-    if (client && iTotalKills > 0) {
-        dmg = iGotKills[client];
-    } else {
-        dmg = 0;
-    }
+    new dmg = client && iTotalKills > 0 ? iGotKills[client] : 0;
     return _:dmg;
 }
 
@@ -207,13 +191,7 @@ public Native_GetMVPCI(Handle:plugin, numParams)
 public Native_GetMVPCIKills(Handle:plugin, numParams)
 {
     new client = GetNativeCell(1);
-    new dmg;
-    
-    if (client && iTotalCommon > 0) {
-        dmg = iGotCommon[client];
-    } else {
-        dmg = 0;
-    }
+    new dmg = client && iTotalCommon > 0 ? iGotCommon[client] : 0;
     return _:dmg;
 }
 
@@ -221,13 +199,7 @@ public Native_GetMVPCIKills(Handle:plugin, numParams)
 public Native_GetMVPCIPercent(Handle:plugin, numParams)
 {
     new client = GetNativeCell(1);
-    new Float: dmgprc;
-    
-    if (client && iTotalCommon > 0) {
-        dmgprc = (float(iGotCommon[client]) / float(iTotalCommon)) * 100;
-    } else {
-        dmgprc = 0.0;
-    }
+    new Float: dmgprc = client && iTotalCommon > 0 ? (float(iGotCommon[client]) / float(iTotalCommon)) * 100 : 0.0;
     return _:dmgprc;
 }
 
@@ -337,10 +309,10 @@ public OnClientPutInServer(client)
  */
 
 public ConVarChange_CountTankDamage(Handle:cvar, const String:oldValue[], const String:newValue[]) {
-    if (StringToInt(newValue) == 0) { bCountTankDamage = false; } else { bCountTankDamage = true; }
+    bCountTankDamage = StringToInt(newValue) != 0;
 }
 public ConVarChange_CountWitchDamage(Handle:cvar, const String:oldValue[], const String:newValue[]) {
-    if (StringToInt(newValue) == 0) { bCountWitchDamage = false; } else { bCountWitchDamage = true; }
+    bCountWitchDamage = StringToInt(newValue) != 0;
 }
 public ConVarChange_TrackFF(Handle:cvar, const String:oldValue[], const String:newValue[]) {
     //if (StringToInt(newValue) == 0) { bTrackFF = false; } else { bTrackFF = true; }
@@ -348,11 +320,13 @@ public ConVarChange_TrackFF(Handle:cvar, const String:oldValue[], const String:n
 }
 public ConVarChange_BrevityFlags(Handle:cvar, const String:oldValue[], const String:newValue[]) {
     iBrevityFlags = StringToInt(newValue);
-    if (!(iBrevityFlags & BREV_FF)) { bTrackFF = true; } // force tracking on if we're showing FF
+    if (!(iBrevityFlags & BREV_FF)) { 
+        bTrackFF = true; 
+    } // force tracking on if we're showing FF
 }
 
 public ConVarChange_RUPActive(Handle:cvar, const String:oldValue[], const String:newValue[]) {
-    if (StringToInt(newValue) == 0) { bRUPActive = false; } else { bRUPActive = true; }
+    bRUPActive = StringToInt(newValue) != 0;
 }
 
 /*
