@@ -106,6 +106,7 @@ new     String:     sGameMode[24] = "\0";
 
 new     String:     sClientName[MAXPLAYERS + 1][64];            // which name is connected to the clientId?
 
+// Basic statistics
 new                 iGotKills[MAXPLAYERS + 1];                  // SI kills             track for each client
 new                 iGotCommon[MAXPLAYERS + 1];                 // CI kills
 new                 iDidDamage[MAXPLAYERS + 1];                 // SI only              these are a bit redundant, but will keep anyway for now
@@ -113,6 +114,10 @@ new                 iDidDamageAll[MAXPLAYERS + 1];              // SI + tank + w
 new                 iDidDamageTank[MAXPLAYERS + 1];             // tank only
 new                 iDidDamageWitch[MAXPLAYERS + 1];            // witch only
 new                 iDidFF[MAXPLAYERS + 1];                     // friendly fire damage
+
+// Detailed statistics
+new                 iDidDamageClass[MAXPLAYERS + 1][ZC_TANK + 1];   // si classes
+new                 pillsUsed[MAXPLAYERS + 1];   // si classes
 
 new                 iTotalKills;                                // prolly more efficient to store than to recalculate
 new                 iTotalCommon;
@@ -127,6 +132,8 @@ new     bool:       bInRound;
 new     bool:       bPlayerLeftStartArea;                       // used for tracking FF when RUP enabled
 
 new     String:     sConsoleBuf[CONBUFSIZE];                    // used for spamming table of stats to console
+new     String:     sDetailedConsoleBuf[CONBUFSIZE];            // used for spamming detailed table of stats to console
+new     String:     sTankConsoleBuf[CONBUFSIZE];                // used for spamming tank table of stats to console
 new     String:     sTmpString[MAX_NAME_LENGTH];                // just used because I'm not going to break my head over why string assignment parameter passing doesn't work
 
 /*
@@ -216,6 +223,7 @@ public OnPluginStart()
     HookEvent("round_end", RoundEnd_Event, EventHookMode_PostNoCopy);
     HookEvent("scavenge_round_start", EventHook:ScavRoundStart);
     HookEvent("player_left_start_area", PlayerLeftStartArea);
+    HookEvent("pills_used", Event_PillsUsed);
     
     // Catching data
     HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Post);
@@ -295,6 +303,13 @@ public OnClientPutInServer(client)
         iDidDamageWitch[client] = 0;
         iDidDamageTank[client] = 0;
         iDidFF[client] = 0;
+
+
+        //@todo detailed statistics - set to 0
+        for (new siClass = ZC_SMOKER; siClass <= ZC_TANK; siClass++) {
+            iDidDamageClass[client][siClass] = 0;
+        }
+        pillsUsed[client] = 0;
         
         // store name for later reference
         strcopy(sClientName[client], 64, tmpBuffer);
@@ -364,6 +379,12 @@ public ScavRoundStart(Handle:event)
         iDidDamageWitch[i] = 0;
         iDidDamageTank[i] = 0;
         iDidFF[i] = 0;
+
+        //@todo detailed statistics - set to 0
+        for (new siClass = ZC_SMOKER; siClass <= ZC_TANK; siClass++) {
+            iDidDamageClass[i][siClass] = 0;
+        }
+        pillsUsed[i] = 0;
     }
     iTotalKills = 0;
     iTotalCommon = 0;
@@ -397,6 +418,12 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
         iDidDamageWitch[i] = 0;
         iDidDamageTank[i] = 0;
         iDidFF[i] = 0;
+
+        //@todo detailed statistics init to 0
+        for (new siClass = ZC_SMOKER; siClass <= ZC_TANK; siClass++) {
+            iDidDamageClass[i][siClass] = 0;
+        }
+        pillsUsed[i] = 0;
     }
     iTotalKills = 0;
     iTotalCommon = 0;
@@ -603,6 +630,17 @@ public Action:delayedMVPPrint(Handle:timer)
 }
 
 /**
+ * Track pill usage
+ */
+public Event_PillsUsed (Handle:event, const String:name[], bool:dontBroadcast)
+{
+    new clientId = GetEventInt(event,"userid");
+    new client = GetClientOfUserId(GetEventInt(event, "userid"));
+    PrintToConsole(clientId, "client id: %d", clientId);
+    pillsUsed[clientId]++;
+}
+
+/**
  * Output the console report.
 
  * This seems like a really ineffective method of doing this. For some reason, it isn't outputting
@@ -639,6 +677,7 @@ public PrintConsoleReport(client)
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|\n", bufDetailedHeader);
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | Damage   | Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops  | Skeets  |\n", bufDetailedHeader);
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|", bufDetailedHeader);
+    Format(bufDetailed, CONBUFSIZELARGE, "%s", sDetailedConsoleBuf);
     Format(bufDetailed, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|\n", bufDetailed);
 
     /**
@@ -658,14 +697,19 @@ public PrintConsoleReport(client)
     if (!client)
     {
         //PrintToConsoleAll("%s%s%s", bufBasic, bufDetailed, bufTank);
+        new index = 0;
         for(new i = 1; i <= MaxClients; i++)
         {
+            index = i;
             if(IsClientAndInGame(i))
             {
                 //VFormat(buffer, sizeof(buffer), format, 2);
                 PrintToConsole(i, bufBasicHeader);
                 PrintToConsole(i, bufBasic);
                 
+                PrintToConsole(i, "Smoker dmg: %d", iDidDamageClass[index][ZC_SMOKER]);
+                PrintToConsole(i, "Tank dmg (%d): %d", index, iDidDamageClass[index][ZC_TANK]);
+
                 PrintToConsole(i, bufDetailedHeader);
                 PrintToConsole(i, bufDetailed);
 
@@ -712,6 +756,11 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
             // survivor on zombie action
             zombieClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
             
+            // Increment the damage for that class to the total
+            iDidDamageClass[attacker][zombieClass] += damageDone;
+            PrintToConsole(attacker, "Attacked: %d - Dmg: %d", zombieClass, damageDone);
+            PrintToConsole(attacker, "Total damage for %d: %d", zombieClass, iDidDamageClass[attacker][zombieClass]);
+
             // separately store SI and tank damage
             if (zombieClass >= ZC_SMOKER && zombieClass < ZC_WITCH)
             {
@@ -981,12 +1030,16 @@ String: GetMVPString()
     // build console buffer
     // -----------------------------------
     sConsoleBuf = "";
+    sDetailedConsoleBuf = "";
+
     new const max_name_len = 20;
     new const s_len = 15;
     decl String:name[MAX_NAME_LENGTH];
     decl String:sikills[s_len], String:sidamage[s_len], String:cikills[s_len];
     decl String:siprc[s_len], String:ciprc[s_len];
     decl String:tankdmg[s_len], String:witchdmg[s_len], String:ff[s_len];
+    decl String:pillUsage[s_len];
+    decl String:tankDmg[s_len], String:hunterDmg[s_len], String:jockeyDmg[s_len], String:chargerDmg[s_len], String:smokerDmg[s_len], String:spitterDmg[s_len], String:boomerDmg[s_len], String:witchDmg[s_len];
     
     new teamCount = GetConVarInt(hTeamSize);
     new i;  // tmp clientid
@@ -1035,32 +1088,53 @@ String: GetMVPString()
         name = sTmpString;
         name[max_name_len] = 0;                     // terminates name at max length
         
-        // count some things
-        /*
-        tot_sidmg += iDidDamageAll[i];
-        tot_sikills += iGotKills[i];
-        tot_siprc += (float(iDidDamageAll[i]) / float(iTotalDamageAll)) * 100;
-        tot_cikills += iGotCommon[i];
-        tot_ciprc += (float(iGotCommon[i]) / float(iTotalCommon)) * 100;
-        tot_tank += iDidDamageTank[i];
-        tot_witch += iDidDamageWitch[i];
-        */
-        
+        // Basic statistics
         Format(sidamage,    s_len, "%8d",   iDidDamageAll[i]);
         Format(siprc,       s_len, "%7.1f", (float(iDidDamageAll[i]) / float(iTotalDamageAll)) * 100 );
         Format(sikills,     s_len, "%8d",   iGotKills[i]);
         Format(cikills,     s_len, "%8d",   iGotCommon[i]);
         Format(ciprc,       s_len, "%7.1f", (float(iGotCommon[i]) / float(iTotalCommon)) * 100 );
         Format(tankdmg,     s_len, "%6d",   iDidDamageTank[i]);
+        PrintToConsole(i, "Tank damage (done before): %6d", tankdmg);
         Format(witchdmg,    s_len, "%6d",   iDidDamageWitch[i]);
         Format(ff,          s_len, "%6d",   iDidFF[i]);
+
+        // Detailed statistics
+
+
 /*
         Format(buf, CONBUFSIZELARGE, "%s| Name                 | Damage   | Percent | SI Kills | Commons  | Percent | Tank   | Witch  | FF           |\n", buf);
         Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|--------------|\n", buf);
 */
+        // Format the basic stats
         Format(sConsoleBuf, CONBUFSIZE,
             "%s| %20s | %8s | %7s | %8s | %8s | %7s | %6s | %6s | %6s                                   |\n",
             sConsoleBuf, name, sidamage, siprc, sikills, cikills, ciprc, tankdmg, witchdmg, ff
+        );
+
+        // Format the detailed stats
+        //Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | Damage   | Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops  | Skeets  |\n", bufDetailedHeader);
+        PrintToConsole(i, "Index: %d", i);
+        PrintToConsole(i, "Tank: %d", ZC_TANK);
+        PrintToConsole(i, "Tank dmg: %d", iDidDamageClass[i][ZC_TANK]);
+        Format(tankDmg, s_len, "%6d",   iDidDamageClass[i][ZC_TANK]);
+        Format(smokerDmg, s_len, "%8d",   iDidDamageClass[i][ZC_SMOKER]);
+        Format(hunterDmg, s_len, "%8d",   iDidDamageClass[i][ZC_HUNTER]);
+        Format(chargerDmg, s_len, "%8d",   iDidDamageClass[i][ZC_CHARGER]);
+        Format(jockeyDmg, s_len, "%7d",   iDidDamageClass[i][ZC_JOCKEY]);
+        Format(spitterDmg, s_len, "%8d",   iDidDamageClass[i][ZC_SPITTER]);
+        Format(boomerDmg, s_len, "%7d",   iDidDamageClass[i][ZC_BOOMER]);
+        Format(pillUsage, s_len, "%7d", pillsUsed[i]);
+
+        PrintToConsole(i, "Tank dmg variable2: %6s (end)", tankDmg);
+
+        Format(witchDmg, s_len, "%6d", iDidDamageClass[i][ZC_WITCH]);
+
+        //| Name                 | Pinned   | Pills   | Damage 
+
+        Format(sDetailedConsoleBuf, CONBUFSIZE,
+            "%s| %20s | %8s | %7s | %8s | %8s | %8s | %7s | %8s | %8s | %7s | \n",
+            sDetailedConsoleBuf, name, sidamage, pillUsage, sidamage, smokerDmg, hunterDmg, boomerDmg, spitterDmg, chargerDmg, jockeyDmg
         );
             
     }
