@@ -33,7 +33,7 @@
 #define BREV_ABSOLUTE           64
 
 #define CONBUFSIZE              1024
-#define CONBUFSIZELARGE         12288
+#define CONBUFSIZELARGE         4096
 
 #define CHARTHRESHOLD           160         // detecting unicode stuff
 
@@ -602,40 +602,87 @@ public Action:delayedMVPPrint(Handle:timer)
     
 }
 
+/**
+ * Output the console report.
+
+ * This seems like a really ineffective method of doing this. For some reason, it isn't outputting
+ * the entire string to the console (and when I try to increase the buffer size I get an error). I
+ * need to ask some of the other developers about this, but for the mean time the workaround I've 
+ * used (breaking the output up in to a range of different data values) should suffice. 
+ * 
+ * This method also shouldn't be this long. Should be broken up in to a range of smaller methods.
+ */
 public PrintConsoleReport(client)
 {
+    /**
+     * Let's prepare the basic information.
+     */
+    decl String:bufBasicHeader[CONBUFSIZE];
+    decl String:bufBasic[CONBUFSIZELARGE];
+
+    Format(bufBasicHeader, CONBUFSIZE, "\n");
+    Format(bufBasicHeader, CONBUFSIZE, "%s| Basic Statistics                                                                                                                       |\n", bufBasicHeader);
+    Format(bufBasicHeader, CONBUFSIZE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|------------------------------------------|\n", bufBasicHeader);
+    Format(bufBasicHeader, CONBUFSIZE, "%s| Name                 | Damage   | Percent | SI Kills | Commons  | Percent | Tank   | Witch  | FF                                       |\n", bufBasicHeader);
+    Format(bufBasicHeader, CONBUFSIZE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|------------------------------------------|", bufBasicHeader);
+    Format(bufBasic, CONBUFSIZELARGE, "%s", sConsoleBuf);
+    Format(bufBasic, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|\n", bufBasic);
+
+    /**
+     * Let's prepare the detailed information.
+     */
+    decl String:bufDetailedHeader[CONBUFSIZE];
+    decl String:bufDetailed[CONBUFSIZELARGE];
+
+    Format(bufDetailedHeader, CONBUFSIZELARGE, "\n");
+    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Detailed Stats (for information on each stat see http://)                                                                              |\n", bufDetailedHeader);
+    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|\n", bufDetailedHeader);
+    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | Damage   | Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops  | Skeets  |\n", bufDetailedHeader);
+    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|", bufDetailedHeader);
+    Format(bufDetailed, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|\n", bufDetailed);
+
+    /**
+     * Let's prepare the tank statistics
+     */
+    decl String:bufTank[CONBUFSIZELARGE];
+    decl String:bufTankHeader[CONBUFSIZE];
+
+    Format(bufTankHeader, CONBUFSIZELARGE, "\n");
+    Format(bufTankHeader, CONBUFSIZELARGE, "%s| Tank stats - Damage dealt while tank was up                                                                                            |\n", bufTankHeader);
+    Format(bufTankHeader, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|----------|------------------------------------|\n", bufTankHeader);
+    Format(bufTankHeader, CONBUFSIZELARGE, "%s| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked   | Pinned                             |\n", bufTankHeader);
+    Format(bufTankHeader, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|----------|------------------------------------|", bufTankHeader);
+    Format(bufTank, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|\n", bufTank);
     
-    decl String:buf[CONBUFSIZELARGE];
+    // If we're not the only client (I'm assuming) loop through and output.
+    if (!client)
+    {
+        //PrintToConsoleAll("%s%s%s", bufBasic, bufDetailed, bufTank);
+        for(new i = 1; i <= MaxClients; i++)
+        {
+            if(IsClientAndInGame(i))
+            {
+                //VFormat(buffer, sizeof(buffer), format, 2);
+                PrintToConsole(i, bufBasicHeader);
+                PrintToConsole(i, bufBasic);
+                
+                PrintToConsole(i, bufDetailedHeader);
+                PrintToConsole(i, bufDetailed);
 
-    // This is the standard console statistics
-    Format(buf, CONBUFSIZELARGE, "\n");
-    Format(buf, CONBUFSIZELARGE, "%s| Basic Statistics                                                                                                                       |\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|------------------------------------------|\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s| Name                 | Damage   | Percent | SI Kills | Commons  | Percent | Tank   | Witch  | FF                                       |\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|------------------------------------------|\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s%s", buf, sConsoleBuf);
-    Format(buf, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|", buf);
-
-    // Track more detailed statistics
-    Format(buf, CONBUFSIZELARGE, "%s\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s| Detailed Stats (for information on each stat see http://)                                                                              |\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | Damage   | Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops  | Skeets  |\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|", buf);
-
-    // Track tank statistics
-    Format(buf, CONBUFSIZELARGE, "%s\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s| Tank stats - Damage dealt while tank was up                                                                                            |\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|----------|------------------------------------|\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked   | Pinned                             |\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|----------|------------------------------------|\n", buf);
-    Format(buf, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|", buf);
-    
-    if (!client) {
-        PrintToConsoleAll("%s", buf);
-    } else {
-        PrintToConsoleClient(client, "%s", buf);
+                PrintToConsole(i, bufTankHeader);
+                PrintToConsole(i, bufTank);
+            }
+        }
+    } else 
+    {
+        //PrintToConsoleClient(client, "%s", bufBasic);
+        if(IsClientAndInGame(client))
+        {
+            PrintToConsole(client, "Testing123");
+            PrintToConsole(client, bufBasic);
+            PrintToConsole(client, bufDetailed);
+            PrintToConsole(client, bufTank);
+        }
     }
 }
 
@@ -1012,7 +1059,7 @@ String: GetMVPString()
         Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|--------------|\n", buf);
 */
         Format(sConsoleBuf, CONBUFSIZE,
-            "%s| %20s | %8s | %7s | %8s | %8s | %7s | %6s | %6s | %6s       |\n",
+            "%s| %20s | %8s | %7s | %8s | %8s | %7s | %6s | %6s | %6s                                   |\n",
             sConsoleBuf, name, sidamage, siprc, sikills, cikills, ciprc, tankdmg, witchdmg, ff
         );
             
