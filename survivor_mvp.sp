@@ -655,12 +655,18 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
                 iTotalDamage += damageDone;
                 iTotalDamageAll += damageDone;
             }
-            else if (zombieClass == ZC_TANK && bCountTankDamage)
+            else if (zombieClass == ZC_TANK)
             {
-                iDidDamageAll[attacker] += damageDone;
+                // We want to track tank damage even if we're not factoring it in to our mvp result
                 iDidDamageTank[attacker] += damageDone;
                 iTotalDamageTank += damageDone;
-                iTotalDamageAll += damageDone;
+
+                // If we're factoring it in, include it in our overall damage
+                if (bCountTankDamage)
+                {
+                    iDidDamageAll[attacker] += damageDone;
+                    iTotalDamageAll += damageDone;
+                }
             }
         }
         else if (GetClientTeam(attacker) == TEAM_SURVIVOR && GetClientTeam(victim) == TEAM_SURVIVOR && bTrackFF)                // survivor on survivor action == FF
@@ -674,6 +680,10 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
     }
 }
 
+/** 
+ * When the infected are hurt (i.e. when a survivor hurts an SI)
+ * We want to use this to track damage done to the witch.
+ */
 public InfectedHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // catch damage done to witch
@@ -686,12 +696,18 @@ public InfectedHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
         new damageDone = GetEventInt(event, "amount");
         
         // no world damage or flukes or whatevs, no bot attackers
-        if (bCountWitchDamage && attackerId && IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR)
+        if (attackerId && IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR)
         {
-            iDidDamageAll[attacker] += damageDone;
+            // We want to track the witch damage regardless of whether we're counting it in our mvp stat
             iDidDamageWitch[attacker] += damageDone;
             iTotalDamageWitch += damageDone;
-            iTotalDamageAll += damageDone;
+
+            // If we're counting witch damage in our mvp stat, lets add the amount of damage done to the witch
+            if (bCountWitchDamage) 
+            {
+                iDidDamageAll[attacker] += damageDone;
+                iTotalDamageAll += damageDone;
+            }
         }
     }
 }
