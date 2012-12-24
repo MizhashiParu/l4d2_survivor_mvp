@@ -117,6 +117,8 @@ new                 iDidFF[MAXPLAYERS + 1];                     // friendly fire
 
 // Detailed statistics
 new                 iDidDamageClass[MAXPLAYERS + 1][ZC_TANK + 1];   // si classes
+new                 timesPinned[MAXPLAYERS + 1][ZC_TANK + 1];   // times pinned
+new                 totalPinned[MAXPLAYERS + 1];                // total times pinned
 new                 pillsUsed[MAXPLAYERS + 1];                  // total pills eaten
 new                 boomerPops[MAXPLAYERS + 1];                 // total boomer pops
 new                 damageReceived[MAXPLAYERS + 1];             // Damage received
@@ -227,7 +229,11 @@ public OnPluginStart()
     HookEvent("player_left_start_area", PlayerLeftStartArea);
     HookEvent("pills_used", pillsUsedEvent);
     HookEvent("boomer_exploded", boomerExploded);
-    
+    HookEvent("charger_carry_end", chargerCarryEnd);
+    HookEvent("jockey_ride", jockeyRide);
+    HookEvent("lunge_pounce", hunterLunged);
+    HookEvent("choke_start", smokerChoke);
+
     // Catching data
     HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Post);
     HookEvent("player_death", PlayerDeath_Event, EventHookMode_Post);
@@ -311,10 +317,12 @@ public OnClientPutInServer(client)
         //@todo detailed statistics - set to 0
         for (new siClass = ZC_SMOKER; siClass <= ZC_TANK; siClass++) {
             iDidDamageClass[client][siClass] = 0;
+            timesPinned[client][siClass] = 0;
         }
         pillsUsed[client] = 0;
         boomerPops[client] = 0;
         damageReceived[client] = 0;
+        totalPinned[client] = 0;
         
         // store name for later reference
         strcopy(sClientName[client], 64, tmpBuffer);
@@ -388,10 +396,12 @@ public ScavRoundStart(Handle:event)
         //@todo detailed statistics - set to 0
         for (new siClass = ZC_SMOKER; siClass <= ZC_TANK; siClass++) {
             iDidDamageClass[i][siClass] = 0;
+            timesPinned[i][siClass] = 0;
         }
         pillsUsed[i] = 0;
         boomerPops[i] = 0;
         damageReceived[i] = 0;
+        totalPinned[i] = 0;
     }
     iTotalKills = 0;
     iTotalCommon = 0;
@@ -429,10 +439,12 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
         //@todo detailed statistics init to 0
         for (new siClass = ZC_SMOKER; siClass <= ZC_TANK; siClass++) {
             iDidDamageClass[i][siClass] = 0;
+            timesPinned[i][siClass] = 0;
         }
         pillsUsed[i] = 0;
         boomerPops[i] = 0;
         damageReceived[i] = 0;
+        totalPinned[i] = 0;
     }
     iTotalKills = 0;
     iTotalCommon = 0;
@@ -670,6 +682,67 @@ public boomerExploded(Handle:event, const String:name[], bool:dontBroadcast)
     PrintToChatAll("boomerExploded action finished");
 }
 
+
+/**
+ * Track when someone gets charged (end of charge for level, or if someone shoots you off etc.)
+ */
+public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    PrintToChatAll("chargerCarryEnd action called");
+    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
+    if (client == 0 || ! IsClientInGame(client)) {
+        return;
+    }
+
+    timesPinned[client][ZC_CHARGER]++;
+    totalPinned[client]++;
+}
+
+/**
+ * Track when someone gets jockeyed.
+ */
+public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    PrintToChatAll("jockeyRide action called");
+    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
+    if (client == 0 || ! IsClientInGame(client)) {
+        return;
+    }
+
+    timesPinned[client][ZC_JOCKEY]++;
+    totalPinned[client]++;
+}
+
+/** 
+ * Track when someone gets huntered.
+ */
+public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    PrintToChatAll("hunterLunged action called");
+    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
+    if (client == 0 || ! IsClientInGame(client)) {
+        return;
+    }
+
+    timesPinned[client][ZC_HUNTER]++;
+    totalPinned[client]++;
+}
+
+/**
+ * Track when someone gets smoked (we track when they start getting smoked, because anyone can get smoked)
+ */
+public smokerChoke(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    PrintToChatAll("smokerChoke action called");
+    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
+    if (client == 0 || ! IsClientInGame(client)) {
+        return;
+    }
+
+    timesPinned[client][ZC_SMOKER]++;
+    totalPinned[client]++;
+}
+
 /**
  * Output the console report.
 
@@ -736,9 +809,6 @@ public PrintConsoleReport(client)
                 //VFormat(buffer, sizeof(buffer), format, 2);
                 PrintToConsole(i, bufBasicHeader);
                 PrintToConsole(i, bufBasic);
-                
-                PrintToConsole(i, "Smoker dmg: %d", iDidDamageClass[index][ZC_SMOKER]);
-                PrintToConsole(i, "Tank dmg (%d): %d", index, iDidDamageClass[index][ZC_TANK]);
 
                 PrintToConsole(i, bufDetailedHeader);
                 PrintToConsole(i, bufDetailed);
@@ -1076,7 +1146,7 @@ String: GetMVPString()
     decl String:sikills[s_len], String:sidamage[s_len], String:cikills[s_len];
     decl String:siprc[s_len], String:ciprc[s_len];
     decl String:tankdmg[s_len], String:witchdmg[s_len], String:ff[s_len];
-    decl String:pillUsage[s_len], String:boomPops[s_len], String:dmgReceived[s_len];
+    decl String:pillUsage[s_len], String:boomPops[s_len], String:dmgReceived[s_len], String:pinned[s_len];
     decl String:tankDmg[s_len], String:hunterDmg[s_len], String:jockeyDmg[s_len], String:chargerDmg[s_len], String:smokerDmg[s_len], String:spitterDmg[s_len], String:boomerDmg[s_len], String:witchDmg[s_len];
     
     new teamCount = GetConVarInt(hTeamSize);
@@ -1133,7 +1203,6 @@ String: GetMVPString()
         Format(cikills,     s_len, "%8d",   iGotCommon[i]);
         Format(ciprc,       s_len, "%7.1f", (float(iGotCommon[i]) / float(iTotalCommon)) * 100 );
         Format(tankdmg,     s_len, "%6d",   iDidDamageTank[i]);
-        PrintToConsole(i, "Tank damage (done before): %6d", tankdmg);
         Format(witchdmg,    s_len, "%6d",   iDidDamageWitch[i]);
         Format(ff,          s_len, "%6d",   iDidFF[i]);
 
@@ -1152,9 +1221,6 @@ String: GetMVPString()
 
         // Format the detailed stats
         //Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | Damage   | Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops  | Skeets  |\n", bufDetailedHeader);
-        PrintToConsole(i, "Index: %d", i);
-        PrintToConsole(i, "Tank: %d", ZC_TANK);
-        PrintToConsole(i, "Tank dmg: %d", iDidDamageClass[i][ZC_TANK]);
         Format(tankDmg, s_len, "%6d",   iDidDamageClass[i][ZC_TANK]);
         Format(smokerDmg, s_len, "%8d",   iDidDamageClass[i][ZC_SMOKER]);
         Format(hunterDmg, s_len, "%8d",   iDidDamageClass[i][ZC_HUNTER]);
@@ -1165,8 +1231,7 @@ String: GetMVPString()
         Format(pillUsage, s_len, "%7d", pillsUsed[i]);
         Format(boomPops, s_len, "%5d", boomerPops[i]);
         Format(dmgReceived, s_len, "%8d", damageReceived[i]);
-
-        PrintToConsole(i, "Tank dmg variable2: %6s (end)", tankDmg);
+        Format(pinned, s_len, "%8d", totalPinned[i]);
 
         Format(witchDmg, s_len, "%6d", iDidDamageClass[i][ZC_WITCH]);
 
@@ -1174,7 +1239,7 @@ String: GetMVPString()
 
         Format(sDetailedConsoleBuf, CONBUFSIZE,
             "%s| %20s | %8s | %7s | %8s | %8s | %8s | %7s | %8s | %8s | %7s | %5s |\n",
-            sDetailedConsoleBuf, name, sidamage, pillUsage, dmgReceived, smokerDmg, hunterDmg, boomerDmg, spitterDmg, chargerDmg, jockeyDmg, boomPops
+            sDetailedConsoleBuf, name, pinned, pillUsage, dmgReceived, smokerDmg, hunterDmg, boomerDmg, spitterDmg, chargerDmg, jockeyDmg, boomPops
         );
             
     }
