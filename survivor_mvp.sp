@@ -689,13 +689,14 @@ public boomerExploded(Handle:event, const String:name[], bool:dontBroadcast)
 public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
     PrintToChatAll("chargerCarryEnd action called");
-    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
+    new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
     }
 
     timesPinned[client][ZC_CHARGER]++;
     totalPinned[client]++;
+    PrintToChatAll("chargerCarryEnd action finished");
 }
 
 /**
@@ -704,13 +705,14 @@ public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
 public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
 {
     PrintToChatAll("jockeyRide action called");
-    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
+    new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
     }
 
     timesPinned[client][ZC_JOCKEY]++;
     totalPinned[client]++;
+    PrintToChatAll("jockeyRide action finished");
 }
 
 /** 
@@ -719,13 +721,14 @@ public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
 public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
 {
     PrintToChatAll("hunterLunged action called");
-    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
+    new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
     }
 
     timesPinned[client][ZC_HUNTER]++;
     totalPinned[client]++;
+    PrintToChatAll("hunterLunged action finished");
 }
 
 /**
@@ -734,13 +737,14 @@ public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
 public smokerChoke(Handle:event, const String:name[], bool:dontBroadcast)
 {
     PrintToChatAll("smokerChoke action called");
-    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
+    new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
     }
 
     timesPinned[client][ZC_SMOKER]++;
     totalPinned[client]++;
+    PrintToChatAll("smokerChoke action finished");
 }
 
 /**
