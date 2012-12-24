@@ -117,7 +117,9 @@ new                 iDidFF[MAXPLAYERS + 1];                     // friendly fire
 
 // Detailed statistics
 new                 iDidDamageClass[MAXPLAYERS + 1][ZC_TANK + 1];   // si classes
-new                 pillsUsed[MAXPLAYERS + 1];   // si classes
+new                 pillsUsed[MAXPLAYERS + 1];                  // total pills eaten
+new                 boomerPops[MAXPLAYERS + 1];                 // total boomer pops
+new                 damageReceived[MAXPLAYERS + 1];             // Damage received
 
 new                 iTotalKills;                                // prolly more efficient to store than to recalculate
 new                 iTotalCommon;
@@ -224,7 +226,7 @@ public OnPluginStart()
     HookEvent("scavenge_round_start", EventHook:ScavRoundStart);
     HookEvent("player_left_start_area", PlayerLeftStartArea);
     HookEvent("pills_used", pillsUsedEvent);
-    PrintToChatAll("pills_used hook set");
+    HookEvent("boomer_exploded", boomerExploded);
     
     // Catching data
     HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Post);
@@ -311,6 +313,8 @@ public OnClientPutInServer(client)
             iDidDamageClass[client][siClass] = 0;
         }
         pillsUsed[client] = 0;
+        boomerPops[client] = 0;
+        damageReceived[client] = 0;
         
         // store name for later reference
         strcopy(sClientName[client], 64, tmpBuffer);
@@ -386,6 +390,8 @@ public ScavRoundStart(Handle:event)
             iDidDamageClass[i][siClass] = 0;
         }
         pillsUsed[i] = 0;
+        boomerPops[i] = 0;
+        damageReceived[i] = 0;
     }
     iTotalKills = 0;
     iTotalCommon = 0;
@@ -425,6 +431,8 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
             iDidDamageClass[i][siClass] = 0;
         }
         pillsUsed[i] = 0;
+        boomerPops[i] = 0;
+        damageReceived[i] = 0;
     }
     iTotalKills = 0;
     iTotalCommon = 0;
@@ -635,14 +643,31 @@ public Action:delayedMVPPrint(Handle:timer)
  */
 public pillsUsedEvent(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    //PrintToChatAll("pills_used hook called");
     new client = GetClientOfUserId(GetEventInt(event, "userid")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
     }
 
     pillsUsed[client]++;
-    //PrintToChatAll("pills_used hook finished");
+}
+
+/**
+ * Track boomer pops
+ */
+public boomerExploded(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    PrintToChatAll("boomerExploded action called");
+    // We only want to track pops where the boomer didn't bile anyone
+    new bool:biled = GetEventInt(event, "splashedbile");
+    if (! biled) {
+        PrintToChatAll("boomer didnt bile anyone");
+        new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+        if (attacker == 0 || ! IsClientInGame(attacker)) {
+            return;
+        }
+        boomerPops[attacker]++;
+    }
+    PrintToChatAll("boomerExploded action finished");
 }
 
 /**
@@ -680,7 +705,7 @@ public PrintConsoleReport(client)
     Format(bufDetailedHeader, CONBUFSIZELARGE, "\n");
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Detailed Stats (for information on each stat see http://)                                                                              |\n", bufDetailedHeader);
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|\n", bufDetailedHeader);
-    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | Damage   | Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops  | Skeets  |\n", bufDetailedHeader);
+    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | DamageRec| Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops  | Skeets  |\n", bufDetailedHeader);
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|", bufDetailedHeader);
     Format(bufDetailed, CONBUFSIZELARGE, "%s", sDetailedConsoleBuf);
     Format(bufDetailed, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|\n", bufDetailed);
@@ -756,6 +781,7 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
     // no world damage or flukes or whatevs, no bot attackers, no infected-to-infected damage
     if (victimId && attackerId && IsClientAndInGame(victim) && IsClientAndInGame(attacker))
     {
+        // If a survivor is attacking infected
         if (GetClientTeam(attacker) == TEAM_SURVIVOR && GetClientTeam(victim) == TEAM_INFECTED)
         {
             // survivor on zombie action
@@ -763,8 +789,8 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
             
             // Increment the damage for that class to the total
             iDidDamageClass[attacker][zombieClass] += damageDone;
-            PrintToConsole(attacker, "Attacked: %d - Dmg: %d", zombieClass, damageDone);
-            PrintToConsole(attacker, "Total damage for %d: %d", zombieClass, iDidDamageClass[attacker][zombieClass]);
+            //PrintToConsole(attacker, "Attacked: %d - Dmg: %d", zombieClass, damageDone);
+            //PrintToConsole(attacker, "Total damage for %d: %d", zombieClass, iDidDamageClass[attacker][zombieClass]);
 
             // separately store SI and tank damage
             if (zombieClass >= ZC_SMOKER && zombieClass < ZC_WITCH)
@@ -774,7 +800,7 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
                 iTotalDamage += damageDone;
                 iTotalDamageAll += damageDone;
             }
-            else if (zombieClass == ZC_TANK)
+            else if (zombieClass == ZC_TANK && damageDone != 5000) // For some reason the last attacker does 5k damage?
             {
                 // We want to track tank damage even if we're not factoring it in to our mvp result
                 iDidDamageTank[attacker] += damageDone;
@@ -788,6 +814,8 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
                 }
             }
         }
+
+        // Otherwise if friendly fire
         else if (GetClientTeam(attacker) == TEAM_SURVIVOR && GetClientTeam(victim) == TEAM_SURVIVOR && bTrackFF)                // survivor on survivor action == FF
         {
             if (!bRUPActive || GetEntityMoveType(victim) != MOVETYPE_NONE || bPlayerLeftStartArea) {
@@ -795,6 +823,11 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
                 iDidFF[attacker] += damageDone;
                 iTotalFF += damageDone;
             }
+        }
+
+        // Otherwise if infected are inflicting damage on a survivor
+        else if (GetClientTeam(attacker) == TEAM_INFECTED && GetClientTeam(victim) == TEAM_SURVIVOR) {
+            damageReceived[victim] += damageDone;
         }
     }
 }
@@ -1043,7 +1076,7 @@ String: GetMVPString()
     decl String:sikills[s_len], String:sidamage[s_len], String:cikills[s_len];
     decl String:siprc[s_len], String:ciprc[s_len];
     decl String:tankdmg[s_len], String:witchdmg[s_len], String:ff[s_len];
-    decl String:pillUsage[s_len];
+    decl String:pillUsage[s_len], String:boomPops[s_len], String:dmgReceived[s_len];
     decl String:tankDmg[s_len], String:hunterDmg[s_len], String:jockeyDmg[s_len], String:chargerDmg[s_len], String:smokerDmg[s_len], String:spitterDmg[s_len], String:boomerDmg[s_len], String:witchDmg[s_len];
     
     new teamCount = GetConVarInt(hTeamSize);
@@ -1130,6 +1163,8 @@ String: GetMVPString()
         Format(spitterDmg, s_len, "%8d",   iDidDamageClass[i][ZC_SPITTER]);
         Format(boomerDmg, s_len, "%7d",   iDidDamageClass[i][ZC_BOOMER]);
         Format(pillUsage, s_len, "%7d", pillsUsed[i]);
+        Format(boomPops, s_len, "%5d", boomerPops[i]);
+        Format(dmgReceived, s_len, "%8d", damageReceived[i]);
 
         PrintToConsole(i, "Tank dmg variable2: %6s (end)", tankDmg);
 
@@ -1138,8 +1173,8 @@ String: GetMVPString()
         //| Name                 | Pinned   | Pills   | Damage 
 
         Format(sDetailedConsoleBuf, CONBUFSIZE,
-            "%s| %20s | %8s | %7s | %8s | %8s | %8s | %7s | %8s | %8s | %7s | \n",
-            sDetailedConsoleBuf, name, sidamage, pillUsage, sidamage, smokerDmg, hunterDmg, boomerDmg, spitterDmg, chargerDmg, jockeyDmg
+            "%s| %20s | %8s | %7s | %8s | %8s | %8s | %7s | %8s | %8s | %7s | %5s |\n",
+            sDetailedConsoleBuf, name, sidamage, pillUsage, dmgReceived, smokerDmg, hunterDmg, boomerDmg, spitterDmg, chargerDmg, jockeyDmg, boomPops
         );
             
     }
