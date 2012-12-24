@@ -223,7 +223,8 @@ public OnPluginStart()
     HookEvent("round_end", RoundEnd_Event, EventHookMode_PostNoCopy);
     HookEvent("scavenge_round_start", EventHook:ScavRoundStart);
     HookEvent("player_left_start_area", PlayerLeftStartArea);
-    HookEvent("pills_used", Event_PillsUsed);
+    HookEvent("pills_used", pillsUsedEvent);
+    PrintToChatAll("pills_used hook set");
     
     // Catching data
     HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Post);
@@ -632,12 +633,16 @@ public Action:delayedMVPPrint(Handle:timer)
 /**
  * Track pill usage
  */
-public Event_PillsUsed (Handle:event, const String:name[], bool:dontBroadcast)
+public pillsUsedEvent(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    new clientId = GetEventInt(event,"userid");
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
-    PrintToConsole(clientId, "client id: %d", clientId);
-    pillsUsed[clientId]++;
+    //PrintToChatAll("pills_used hook called");
+    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
+    if (client == 0 || ! IsClientInGame(client)) {
+        return;
+    }
+
+    pillsUsed[client]++;
+    //PrintToChatAll("pills_used hook finished");
 }
 
 /**
