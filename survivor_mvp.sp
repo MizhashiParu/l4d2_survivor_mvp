@@ -123,6 +123,14 @@ new                 pillsUsed[MAXPLAYERS + 1];                  // total pills e
 new                 boomerPops[MAXPLAYERS + 1];                 // total boomer pops
 new                 damageReceived[MAXPLAYERS + 1];             // Damage received
 
+// Tank stats
+new     bool:       tankSpawned = false;                        // When tank is spawned
+new     int:        commonKilledDuringTank[MAXPLAYERS + 1];     // Common killed during the tank
+new     int:        ttlCommonKilledDuringTank = 0;              // Common killed during the tank
+new     int:        siDmgDuringTank[MAXPLAYERS + 1];            // SI killed during the tank
+new     int:        ttlSiDmgDuringTank = 0;                     // Total SI killed during the tank
+
+
 new                 iTotalKills;                                // prolly more efficient to store than to recalculate
 new                 iTotalCommon;
 new                 iTotalDamage;
@@ -136,7 +144,7 @@ new     bool:       bInRound;
 new     bool:       bPlayerLeftStartArea;                       // used for tracking FF when RUP enabled
 
 new     String:     sConsoleBuf[CONBUFSIZE];                    // used for spamming table of stats to console
-new     String:     sDetailedConsoleBuf[CONBUFSIZE];            // used for spamming detailed table of stats to console
+new     String:     sDetailedConsoleBuf[CONBUFSIZE];            // used for detailed table of stats to console
 new     String:     sTankConsoleBuf[CONBUFSIZE];                // used for spamming tank table of stats to console
 new     String:     sTmpString[MAX_NAME_LENGTH];                // just used because I'm not going to break my head over why string assignment parameter passing doesn't work
 
@@ -233,6 +241,8 @@ public OnPluginStart()
     HookEvent("jockey_ride", jockeyRide);
     HookEvent("lunge_pounce", hunterLunged);
     HookEvent("choke_start", smokerChoke);
+    HookEvent("tank_killed", tankKilled);
+    HookEvent("tank_spawn", tankSpawn);
 
     // Catching data
     HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Post);
@@ -748,6 +758,22 @@ public smokerChoke(Handle:event, const String:name[], bool:dontBroadcast)
 }
 
 /**
+ * When the tank spawns
+ */
+public tankSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
+    PrintToChatAll("Tank spawned");
+    tankSpawned = true;
+}
+
+/**
+ * When the tank is killed
+ */
+public tankKilled(Handle:event, const String:name[], bool:dontBroadcast) {
+    PrintToChatAll("Tank is killed");
+    tankSpawned = false;
+}
+
+/**
  * Output the console report.
 
  * This seems like a really ineffective method of doing this. For some reason, it isn't outputting
@@ -798,6 +824,7 @@ public PrintConsoleReport(client)
     Format(bufTankHeader, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|----------|------------------------------------|\n", bufTankHeader);
     Format(bufTankHeader, CONBUFSIZELARGE, "%s| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked   | Pinned                             |\n", bufTankHeader);
     Format(bufTankHeader, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|----------|------------------------------------|", bufTankHeader);
+    Format(bufTank, CONBUFSIZELARGE, "%s", sTankConsoleBuf);
     Format(bufTank, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|\n", bufTank);
     
     // If we're not the only client (I'm assuming) loop through and output.
@@ -853,7 +880,7 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
     new damageDone = GetEventInt(event, "dmg_health");
     new healthRemaining = GetEventInt(event, "health");
 
-    PrintToChatAll("Hurt: %d (%d), attacker: %d (%d), health remaining: %d, damage: %d", victimId, victim, attackerId, attacker, healthRemaining, damageDone);
+    //PrintToChatAll("Hurt: %d (%d), attacker: %d (%d), health remaining: %d, damage: %d", victimId, victim, attackerId, attacker, healthRemaining, damageDone);
     
     // no world damage or flukes or whatevs, no bot attackers, no infected-to-infected damage
     if (victimId && attackerId && IsClientAndInGame(victim) && IsClientAndInGame(attacker))
@@ -872,6 +899,12 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
             // separately store SI and tank damage
             if (zombieClass >= ZC_SMOKER && zombieClass < ZC_WITCH)
             {
+                // If the tank is up, let's store separately
+                if (tankSpawned) {
+                    siDmgDuringTank[attacker] += damageDone;
+                    ttlSiDmgDuringTank += damageDone;
+                }
+
                 iDidDamage[attacker] += damageDone;
                 iDidDamageAll[attacker] += damageDone;
                 iTotalDamage += damageDone;
@@ -988,6 +1021,12 @@ public InfectedDeath_Event(Handle:event, const String:name[], bool:dontBroadcast
     
     if (attackerId && IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR)
     {
+        // If the tank is up, let's store separately
+        if (tankSpawned) {
+            commonKilledDuringTank[attacker]++;
+            ttlCommonKilledDuringTank++;
+        }
+
         iGotCommon[attacker]++;
         iTotalCommon++;
         // if victimType > 2, it's an "uncommon" (of some type or other) -- do nothing with this ftpresent.
@@ -1169,6 +1208,9 @@ String: GetMVPString()
     decl String:pillUsage[s_len], String:boomPops[s_len], String:dmgReceived[s_len], String:pinned[s_len];
     decl String:tankDmg[s_len], String:hunterDmg[s_len], String:jockeyDmg[s_len], String:chargerDmg[s_len], String:smokerDmg[s_len], String:spitterDmg[s_len], String:boomerDmg[s_len], String:witchDmg[s_len];
     
+    // Tank statistics data values
+    decl String:siDuringTank[s_len], String:commonDuringTank[s_len], String:dmgToTank[s_len], String:tankPercentage[s_len], String:commonPercent[s_len], String:siPercent[s_len];
+
     new teamCount = GetConVarInt(hTeamSize);
     new i;  // tmp clientid
     new mpv_done[4];
@@ -1239,8 +1281,10 @@ String: GetMVPString()
             sConsoleBuf, name, sidamage, siprc, sikills, cikills, ciprc, tankdmg, witchdmg, ff
         );
 
-        // Format the detailed stats
-        //Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | Damage   | Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops  | Skeets  |\n", bufDetailedHeader);
+        
+        /**
+         * Let's format the detailed statistics and add it to our console output string.
+         */
         Format(tankDmg, s_len, "%6d",   iDidDamageClass[i][ZC_TANK]);
         Format(smokerDmg, s_len, "%8d",   iDidDamageClass[i][ZC_SMOKER]);
         Format(hunterDmg, s_len, "%8d",   iDidDamageClass[i][ZC_HUNTER]);
@@ -1252,34 +1296,32 @@ String: GetMVPString()
         Format(boomPops, s_len, "%5d", boomerPops[i]);
         Format(dmgReceived, s_len, "%8d", damageReceived[i]);
         Format(pinned, s_len, "%8d", totalPinned[i]);
-
         Format(witchDmg, s_len, "%6d", iDidDamageClass[i][ZC_WITCH]);
-
-        //| Name                 | Pinned   | Pills   | Damage 
 
         Format(sDetailedConsoleBuf, CONBUFSIZE,
             "%s| %20s | %8s | %7s | %8s | %8s | %8s | %7s | %8s | %8s | %7s | %5s           |\n",
             sDetailedConsoleBuf, name, pinned, pillUsage, dmgReceived, smokerDmg, hunterDmg, boomerDmg, spitterDmg, chargerDmg, jockeyDmg, boomPops
         );
+
+        /**
+         * Let's format our tank statistics
+         */
+        
+        Format(dmgToTank, s_len, "%9d", iDidDamageTank[i]);
+        Format(commonDuringTank, s_len, "%8d", commonKilledDuringTank[i]);
+        Format(siDuringTank, s_len, "%7d", siDmgDuringTank[i]);
+        Format(tankPercentage,  s_len, "%7.1f", (float(iDidDamageTank[i]) / float(iTotalDamageTank)) * 100 );
+        Format(commonPercent,  s_len, "%7.1f", (float(commonKilledDuringTank[i]) / float(ttlCommonKilledDuringTank)) * 100 );
+        Format(siPercent,  s_len, "%7.1f", (float(siDmgDuringTank[i]) / float(ttlSiDmgDuringTank)) * 100 );
+
+        Format(sTankConsoleBuf, CONBUFSIZE,
+            "%s| %20s | %9s | %8s | %8s | %8s | %7s | %8s |\n",
+            sTankConsoleBuf, name, dmgToTank, tankPercentage, commonDuringTank, commonPercent, siDuringTank, siPercent
+        );
+
+        //| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked   | Pinned                             |
             
     }
-    
-    /*
-    Format(sConsoleBuf, CONBUFSIZE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|--------------|\n", sConsoleBuf);
-    
-    Format(sidamage,    s_len, "%8d",   iTotalDamageAll - tot_sidmg);
-    Format(siprc,       s_len, "%7.1f", 100.0 - (float(iTotalDamageAll) / float(tot_sidmg)) * 100 );
-    Format(sikills,     s_len, "%8d",   iTotalKills - tot_sikills);
-    Format(cikills,     s_len, "%8d",   iTotalCommon - tot_cikills);
-    Format(ciprc,       s_len, "%7.1f", 100.0 - (float(iTotalCommon) / float(tot_cikills)) * 100 );
-    Format(tankdmg,     s_len, "%6d",   iTotalDamageTank - tot_tank);
-    Format(witchdmg,    s_len, "%6d",   iTotalDamageWitch - tot_witch);
-    
-    Format(sConsoleBuf, CONBUFSIZE,
-            "%s| %20s | %8s | %7s | %8s | %8s | %7s | %6s | %6s |              |\n",
-            sConsoleBuf, "(others)", sidamage, siprc, sikills, cikills, ciprc, tankdmg, witchdmg
-        );
-    */
     
     return printBuffer;
 }
