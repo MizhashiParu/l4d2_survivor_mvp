@@ -17,15 +17,16 @@ A lot of the code needs to be cleaned up and refactored. I suppose after all of 
     - Total damage received
     - Kills of each zombie class
     - Boomer pops (without anyone getting boomed)
+  - Tank stats (collect and output stats when tank is up so we can see who isn't pulling their weight):
+    - Common/SI killed during tank
+    - Total damage dealt to tank (if someone doesn't deal a lot of damage, doesn't clear SI/common and DOESNT get pinned, they're doing something wrong)
  
 
 ##TODO:
   - Tank stats (collect and output stats when tank is up so we can see who isn't pulling their weight):
-    - Common/SI killed during tank
     - Number of rocks eaten
     - Number of rocks skeeted
     - Number of times pinned/smoked etc.
-    - Total damage dealt to tank (if someone doesn't deal a lot of damage, doesn't clear SI/common and DOESNT get pinned, they're doing something wrong)
     - Time spent LOSing tank.
   - Misc stats
     - Track skeets (I might hold off on this for a bit as it's going to be a bit annoying)
