@@ -781,9 +781,9 @@ public PrintConsoleReport(client)
 
     Format(bufDetailedHeader, CONBUFSIZELARGE, "\n");
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Detailed Stats (for information on each stat see http://)                                                                              |\n", bufDetailedHeader);
-    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|\n", bufDetailedHeader);
-    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | DamageRec| Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops  | Skeets  |\n", bufDetailedHeader);
-    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-------|---------|", bufDetailedHeader);
+    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-----------------|\n", bufDetailedHeader);
+    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | DamageRec| Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops            |\n", bufDetailedHeader);
+    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-----------------|", bufDetailedHeader);
     Format(bufDetailed, CONBUFSIZELARGE, "%s", sDetailedConsoleBuf);
     Format(bufDetailed, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|\n", bufDetailed);
 
@@ -851,6 +851,9 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
     new attacker = GetClientOfUserId(attackerId);
     
     new damageDone = GetEventInt(event, "dmg_health");
+    new healthRemaining = GetEventInt(event, "health");
+
+    PrintToChatAll("Hurt: %d (%d), attacker: %d (%d), health remaining: %d, damage: %d", victimId, victim, attackerId, attacker, healthRemaining, damageDone);
     
     // no world damage or flukes or whatevs, no bot attackers, no infected-to-infected damage
     if (victimId && attackerId && IsClientAndInGame(victim) && IsClientAndInGame(attacker))
@@ -940,15 +943,17 @@ public InfectedHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
 
 public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
+    // Get the victim details
     new zombieClass = 0;
-    
     new victimId = GetEventInt(event, "userid");
     new victim = GetClientOfUserId(victimId);
     
+    // Get the attacker details
     new attackerId = GetEventInt(event, "attacker");
     new attacker = GetClientOfUserId(attackerId);
-    
-    //new bool:headshot = GetEventBool(event, "headshot");
+
+    // Get the damage type
+    new damagetype = GetEventInt(event, "type");
     
     // no world kills or flukes or whatevs, no bot attackers
     if (victimId && attackerId && IsClientAndInGame(victim) && IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR)
@@ -958,11 +963,22 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
         // only SI, not the tank && only player-attackers
         if (zombieClass >= ZC_SMOKER && zombieClass < ZC_WITCH)
         {
+            PrintToChatAll("SI just died");
             // store kill to count for attacker id
             iGotKills[attacker]++;
             iTotalKills++;
         }
+
+        // If we killed a hunter
+        if (isHunter(zombieClass)) {
+            PrintToChatAll("Just killed a hunter: Dmg: %d");
+        }
     }
+}
+
+// Was the zombie a hunter?
+public bool:isHunter(int:zombieClass) {
+    return zombieClass == ZC_HUNTER;
 }
 
 public InfectedDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
@@ -1242,7 +1258,7 @@ String: GetMVPString()
         //| Name                 | Pinned   | Pills   | Damage 
 
         Format(sDetailedConsoleBuf, CONBUFSIZE,
-            "%s| %20s | %8s | %7s | %8s | %8s | %8s | %7s | %8s | %8s | %7s | %5s |\n",
+            "%s| %20s | %8s | %7s | %8s | %8s | %8s | %7s | %8s | %8s | %7s | %5s           |\n",
             sDetailedConsoleBuf, name, pinned, pillUsage, dmgReceived, smokerDmg, hunterDmg, boomerDmg, spitterDmg, chargerDmg, jockeyDmg, boomPops
         );
             

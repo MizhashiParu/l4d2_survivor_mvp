@@ -27,5 +27,5 @@ A lot of the code needs to be cleaned up and refactored. I suppose after all of 
     - Number of times pinned/smoked etc.
     - Total damage dealt to tank (if someone doesn't deal a lot of damage, doesn't clear SI/common and DOESNT get pinned, they're doing something wrong)
   - Misc stats
-    - Track skeets
+    - Track skeets (I might hold off on this for a bit as it's going to be a bit annoying)
   - Add command to print stats to console (so we can view stats mid-game, not just at the end of round)
