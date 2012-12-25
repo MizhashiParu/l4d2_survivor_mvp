@@ -11,7 +11,7 @@ A lot of the code needs to be cleaned up and refactored. I suppose after all of 
 
   - Track witch and tank damage regardless of whether or not we're including it in our mvp stat.
   - Fix issue with last survivor to inflict damage on tank prior its death being awarded 5k damage. 
-  - Misc stats
+  - Collect and display to console more detailed statistics:
     - Number of times pinned/smoked etc.
     - Number of pills eaten
     - Total damage received
@@ -20,15 +20,12 @@ A lot of the code needs to be cleaned up and refactored. I suppose after all of 
  
 
 ##TODO:
-
   - Tank stats (collect and output stats when tank is up so we can see who isn't pulling their weight):
     - Common/SI killed during tank
     - Number of rocks eaten
     - Number of rocks skeeted
     - Number of times pinned/smoked etc.
     - Total damage dealt to tank (if someone doesn't deal a lot of damage, doesn't clear SI/common and DOESNT get pinned, they're doing something wrong)
-
   - Misc stats
     - Track skeets
-
-- Add command to print stats to console (so we can view stats mid-game, not just at the end of round)
+  - Add command to print stats to console (so we can view stats mid-game, not just at the end of round)
