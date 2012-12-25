@@ -678,18 +678,18 @@ public pillsUsedEvent(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public boomerExploded(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    PrintToChatAll("boomerExploded action called");
+    //PrintToChatAll("boomerExploded action called");
     // We only want to track pops where the boomer didn't bile anyone
     new bool:biled = GetEventInt(event, "splashedbile");
     if (! biled) {
-        PrintToChatAll("boomer didnt bile anyone");
+        //PrintToChatAll("boomer didnt bile anyone");
         new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
         if (attacker == 0 || ! IsClientInGame(attacker)) {
             return;
         }
         boomerPops[attacker]++;
     }
-    PrintToChatAll("boomerExploded action finished");
+    //PrintToChatAll("boomerExploded action finished");
 }
 
 
@@ -698,7 +698,7 @@ public boomerExploded(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    PrintToChatAll("chargerCarryEnd action called");
+    //PrintToChatAll("chargerCarryEnd action called");
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
@@ -706,7 +706,7 @@ public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_CHARGER]++;
     totalPinned[client]++;
-    PrintToChatAll("chargerCarryEnd action finished");
+    //PrintToChatAll("chargerCarryEnd action finished");
 }
 
 /**
@@ -714,7 +714,7 @@ public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    PrintToChatAll("jockeyRide action called");
+    //PrintToChatAll("jockeyRide action called");
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
@@ -722,7 +722,7 @@ public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_JOCKEY]++;
     totalPinned[client]++;
-    PrintToChatAll("jockeyRide action finished");
+    //PrintToChatAll("jockeyRide action finished");
 }
 
 /** 
@@ -730,7 +730,7 @@ public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    PrintToChatAll("hunterLunged action called");
+    //PrintToChatAll("hunterLunged action called");
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
@@ -738,7 +738,7 @@ public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_HUNTER]++;
     totalPinned[client]++;
-    PrintToChatAll("hunterLunged action finished");
+    //PrintToChatAll("hunterLunged action finished");
 }
 
 /**
@@ -746,7 +746,7 @@ public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public smokerChoke(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    PrintToChatAll("smokerChoke action called");
+   // PrintToChatAll("smokerChoke action called");
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
@@ -754,14 +754,14 @@ public smokerChoke(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_SMOKER]++;
     totalPinned[client]++;
-    PrintToChatAll("smokerChoke action finished");
+   // PrintToChatAll("smokerChoke action finished");
 }
 
 /**
  * When the tank spawns
  */
 public tankSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
-    PrintToChatAll("Tank spawned");
+    //PrintToChatAll("Tank spawned");
     tankSpawned = true;
 }
 
@@ -769,7 +769,7 @@ public tankSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
  * When the tank is killed
  */
 public tankKilled(Handle:event, const String:name[], bool:dontBroadcast) {
-    PrintToChatAll("Tank is killed");
+    //PrintToChatAll("Tank is killed");
     tankSpawned = false;
 }
 
@@ -996,7 +996,7 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
         // only SI, not the tank && only player-attackers
         if (zombieClass >= ZC_SMOKER && zombieClass < ZC_WITCH)
         {
-            PrintToChatAll("SI just died");
+            //PrintToChatAll("SI just died");
             // store kill to count for attacker id
             iGotKills[attacker]++;
             iTotalKills++;
@@ -1004,7 +1004,7 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
 
         // If we killed a hunter
         if (isHunter(zombieClass)) {
-            PrintToChatAll("Just killed a hunter: Dmg: %d");
+           // PrintToChatAll("Just killed a hunter: Dmg: %d");
         }
     }
 }
