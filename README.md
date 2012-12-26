@@ -19,12 +19,13 @@ A lot of the code needs to be cleaned up and refactored. I suppose after all of 
     - Boomer pops (without anyone getting boomed)
   - Tank stats (collect and output stats when tank is up so we can see who isn't pulling their weight):
     - Common/SI killed during tank
+    - Number of rocks eaten
     - Total damage dealt to tank (if someone doesn't deal a lot of damage, doesn't clear SI/common and DOESNT get pinned, they're doing something wrong)
  
 
 ##TODO:
   - Tank stats (collect and output stats when tank is up so we can see who isn't pulling their weight):
-    - Number of rocks eaten
+    
     - Number of rocks skeeted
     - Number of times pinned/smoked etc.
     - Time spent LOSing tank.

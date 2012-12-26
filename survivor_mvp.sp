@@ -138,6 +138,7 @@ new                 siDmgDuringTank[MAXPLAYERS + 1];            // SI killed dur
 new                 ttlSiDmgDuringTank = 0;                     // Total SI killed during the tank
 new     bool:       tankThrow;                                  // Whether or not the tank has thrown a rock
 new                 rocksEaten[MAXPLAYERS + 1];                 // The amount of rocks a player 'ate'.
+new     int:         rockIndex;
 
 
 new                 iTotalKills;                                // prolly more efficient to store than to recalculate
@@ -698,28 +699,24 @@ public Action:delayedMVPPrint(Handle:timer)
  * When an entity is created (which we use to track rocks)
  * don't actually need this
  */
-/*public OnEntityCreated(entity, const String:classname[])
-{
- 
+public OnEntityCreated(entity, const String:classname[])
+{ 
     if(! tankThrow) {
         return;
     }
 
     if(StrEqual(classname, "tank_rock", true))  {
-        PrintToChatAll("rock entity created");
+        rockIndex = entity;
     }
-}*/
+}
 
 /**
  * When an entity has been destroyed (i.e. when a rock lands on someone)
  */
 public OnEntityDestroyed(entity)
 {   
-    decl String:className[20];
-    GetEdictClassname(entity, className, 20);
-
     // The rock has been destroyed
-    if(StrEqual(className, "tank_rock", true) && GetEntProp(entity, Prop_Send, "m_iTeamNum") >= 0) {
+    if (rockIndex == entity) {
         tankThrow = false;
     }
 }
@@ -757,18 +754,15 @@ public pillsUsedEvent(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public boomerExploded(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    //PrintToChatAll("boomerExploded action called");
     // We only want to track pops where the boomer didn't bile anyone
     new bool:biled = GetEventInt(event, "splashedbile");
     if (! biled) {
-        //PrintToChatAll("boomer didnt bile anyone");
         new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
         if (attacker == 0 || ! IsClientInGame(attacker)) {
             return;
         }
         boomerPops[attacker]++;
     }
-    //PrintToChatAll("boomerExploded action finished");
 }
 
 
@@ -777,7 +771,6 @@ public boomerExploded(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    //PrintToChatAll("chargerCarryEnd action called");
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
@@ -785,7 +778,6 @@ public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_CHARGER]++;
     totalPinned[client]++;
-    //PrintToChatAll("chargerCarryEnd action finished");
 }
 
 /**
@@ -793,7 +785,6 @@ public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    //PrintToChatAll("jockeyRide action called");
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
@@ -801,7 +792,6 @@ public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_JOCKEY]++;
     totalPinned[client]++;
-    //PrintToChatAll("jockeyRide action finished");
 }
 
 /** 
@@ -809,7 +799,6 @@ public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    //PrintToChatAll("hunterLunged action called");
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
@@ -817,7 +806,6 @@ public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_HUNTER]++;
     totalPinned[client]++;
-    //PrintToChatAll("hunterLunged action finished");
 }
 
 /**
@@ -825,7 +813,6 @@ public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public smokerChoke(Handle:event, const String:name[], bool:dontBroadcast)
 {
-   // PrintToChatAll("smokerChoke action called");
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
@@ -833,14 +820,12 @@ public smokerChoke(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_SMOKER]++;
     totalPinned[client]++;
-   // PrintToChatAll("smokerChoke action finished");
 }
 
 /**
  * When the tank spawns
  */
 public tankSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
-    //PrintToChatAll("Tank spawned");
     tankSpawned = true;
 }
 
@@ -848,7 +833,6 @@ public tankSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
  * When the tank is killed
  */
 public tankKilled(Handle:event, const String:name[], bool:dontBroadcast) {
-    //PrintToChatAll("Tank is killed");
     tankSpawned = false;
 }
 
@@ -900,9 +884,9 @@ public PrintConsoleReport(client)
 
     Format(bufTankHeader, CONBUFSIZELARGE, "\n");
     Format(bufTankHeader, CONBUFSIZELARGE, "%s| Tank stats - Damage dealt while tank was up                                                                                            |\n", bufTankHeader);
-    Format(bufTankHeader, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|----------|------------------------------------|\n", bufTankHeader);
-    Format(bufTankHeader, CONBUFSIZELARGE, "%s| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked   | Pinned                             |\n", bufTankHeader);
-    Format(bufTankHeader, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|----------|------------------------------------|", bufTankHeader);
+    Format(bufTankHeader, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|--------|--------------------------------------|\n", bufTankHeader);
+    Format(bufTankHeader, CONBUFSIZELARGE, "%s| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked | Pinned                               |\n", bufTankHeader);
+    Format(bufTankHeader, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|--------|--------------------------------------|", bufTankHeader);
     Format(bufTank, CONBUFSIZELARGE, "%s", sTankConsoleBuf);
     Format(bufTank, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|\n", bufTank);
     
@@ -1024,7 +1008,6 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
         // Otherwise if infected are inflicting damage on a survivor
         else if (GetClientTeam(attacker) == TEAM_INFECTED && GetClientTeam(victim) == TEAM_SURVIVOR) {
             // If we got hit by a tank, let's see what type of damage it was
-            // PrintToChatAll("aType: %d - Damage: %d", dmgType, damageDone);
             // If it was from a rock throw
             if (tankThrow) {
                 rocksEaten[victim]++;
@@ -1088,7 +1071,6 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
         // only SI, not the tank && only player-attackers
         if (zombieClass >= ZC_SMOKER && zombieClass < ZC_WITCH)
         {
-            //PrintToChatAll("SI just died");
             // store kill to count for attacker id
             iGotKills[attacker]++;
             iTotalKills++;
@@ -1096,7 +1078,7 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
 
         // If we killed a hunter
         if (isHunter(zombieClass)) {
-           // PrintToChatAll("Just killed a hunter: Dmg: %d");
+           
         }
     }
 }
@@ -1411,14 +1393,14 @@ String: GetMVPString()
         Format(tankPercentage,  s_len, "%7.1f", (float(iDidDamageTank[i]) / float(iTotalDamageTank)) * 100 );
         Format(commonPercent,  s_len, "%7.1f", (float(commonKilledDuringTank[i]) / float(ttlCommonKilledDuringTank)) * 100 );
         Format(siPercent,  s_len, "%7.1f", (float(siDmgDuringTank[i]) / float(ttlSiDmgDuringTank)) * 100 );
-        Format(rocksAte, s_len, "%8d", rocksEaten[i]);
+        Format(rocksAte, s_len, "%6d", rocksEaten[i]);
 
         Format(sTankConsoleBuf, CONBUFSIZE,
-            "%s| %20s | %9s | %8s | %8s | %8s | %7s | %8s | %8s | \n",
+            "%s| %20s | %9s | %8s | %8s | %8s | %7s | %8s | %6s | \n",
             sTankConsoleBuf, name, dmgToTank, tankPercentage, commonDuringTank, commonPercent, siDuringTank, siPercent, rocksAte
         );
 
-        //| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked   | Pinned                             |
+        //| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked | Pinned                             |
             
     }
     
