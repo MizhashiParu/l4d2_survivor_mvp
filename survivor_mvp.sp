@@ -3,6 +3,7 @@
 #include <sourcemod.inc>
 #include <sdkhooks>
 #include <sdktools>
+#include <sdktools_functions>
 #include <left4downtown>
 #include <timers.inc>
 
@@ -36,6 +37,12 @@
 #define CONBUFSIZELARGE         4096
 
 #define CHARTHRESHOLD           160         // detecting unicode stuff
+
+
+/**
+ * Issues:
+ *  - Add damage received from common
+ */
 
 /*
         Changelog
@@ -125,10 +132,12 @@ new                 damageReceived[MAXPLAYERS + 1];             // Damage receiv
 
 // Tank stats
 new     bool:       tankSpawned = false;                        // When tank is spawned
-new     int:        commonKilledDuringTank[MAXPLAYERS + 1];     // Common killed during the tank
-new     int:        ttlCommonKilledDuringTank = 0;              // Common killed during the tank
-new     int:        siDmgDuringTank[MAXPLAYERS + 1];            // SI killed during the tank
-new     int:        ttlSiDmgDuringTank = 0;                     // Total SI killed during the tank
+new                 commonKilledDuringTank[MAXPLAYERS + 1];     // Common killed during the tank
+new                 ttlCommonKilledDuringTank = 0;              // Common killed during the tank
+new                 siDmgDuringTank[MAXPLAYERS + 1];            // SI killed during the tank
+new                 ttlSiDmgDuringTank = 0;                     // Total SI killed during the tank
+new     bool:       tankThrow;                                  // Whether or not the tank has thrown a rock
+new                 rocksEaten[MAXPLAYERS + 1];                 // The amount of rocks a player 'ate'.
 
 
 new                 iTotalKills;                                // prolly more efficient to store than to recalculate
@@ -243,6 +252,7 @@ public OnPluginStart()
     HookEvent("choke_start", smokerChoke);
     HookEvent("tank_killed", tankKilled);
     HookEvent("tank_spawn", tankSpawn);
+    HookEvent("ability_use", abilityUseEvent);
 
     // Catching data
     HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Post);
@@ -333,6 +343,9 @@ public OnClientPutInServer(client)
         boomerPops[client] = 0;
         damageReceived[client] = 0;
         totalPinned[client] = 0;
+        commonKilledDuringTank[client] = 0;
+        siDmgDuringTank[client] = 0;
+        rocksEaten[client] = 0;
         
         // store name for later reference
         strcopy(sClientName[client], 64, tmpBuffer);
@@ -412,6 +425,9 @@ public ScavRoundStart(Handle:event)
         boomerPops[i] = 0;
         damageReceived[i] = 0;
         totalPinned[i] = 0;
+        commonKilledDuringTank[i] = 0;
+        siDmgDuringTank[i] = 0;
+        rocksEaten[i] = 0;
     }
     iTotalKills = 0;
     iTotalCommon = 0;
@@ -420,8 +436,12 @@ public ScavRoundStart(Handle:event)
     iTotalDamageWitch = 0;
     iTotalDamageAll = 0;
     iTotalFF = 0;
+    ttlSiDmgDuringTank = 0;
+    ttlCommonKilledDuringTank = 0;
+    tankThrow = false;
     
     bInRound = true;
+    tankSpawned = false;
 }
 
 public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
@@ -455,12 +475,21 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
         boomerPops[i] = 0;
         damageReceived[i] = 0;
         totalPinned[i] = 0;
+        commonKilledDuringTank[i] = 0;
+        siDmgDuringTank[i] = 0;
+        rocksEaten[i] = 0;
     }
     iTotalKills = 0;
     iTotalCommon = 0;
     iTotalDamage = 0;
     iTotalDamageAll = 0;
     iTotalFF = 0;
+    ttlSiDmgDuringTank = 0;
+    ttlCommonKilledDuringTank = 0;
+    iTotalDamageTank = 0;
+    tankThrow = false;
+
+    tankSpawned = false;
 }
 
 public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
@@ -485,6 +514,8 @@ public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
             bInRound = false;
         }
     }
+
+    tankSpawned = false;
 }
 
 
@@ -576,6 +607,10 @@ public Action:ShowMVPStats_Cmd(client, args)
     }
 }
 
+public bool:tankSpawnedDuringRound() {
+    return ttlSiDmgDuringTank > 0 || ttlCommonKilledDuringTank > 0 || iTotalDamageTank > 0;
+}
+
 public Action:delayedMVPPrint(Handle:timer)
 {
     decl String:printBuffer[512];
@@ -657,7 +692,51 @@ public Action:delayedMVPPrint(Handle:timer)
             }
         }
     }
-    
+}
+
+/**
+ * When an entity is created (which we use to track rocks)
+ * don't actually need this
+ */
+/*public OnEntityCreated(entity, const String:classname[])
+{
+ 
+    if(! tankThrow) {
+        return;
+    }
+
+    if(StrEqual(classname, "tank_rock", true))  {
+        PrintToChatAll("rock entity created");
+    }
+}*/
+
+/**
+ * When an entity has been destroyed (i.e. when a rock lands on someone)
+ */
+public OnEntityDestroyed(entity)
+{   
+    decl String:className[20];
+    GetEdictClassname(entity, className, 20);
+
+    // The rock has been destroyed
+    if(StrEqual(className, "tank_rock", true) && GetEntProp(entity, Prop_Send, "m_iTeamNum") >= 0) {
+        tankThrow = false;
+    }
+}
+
+/**
+ * When an infected uses their ability
+ */
+public Action:abilityUseEvent(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    decl String:ability[32];
+    GetEventString(event, "ability", ability, 32);
+
+    // If tank is throwing a rock
+    if(StrEqual(ability, "ability_throw", true)) {
+        tankThrow = true;
+    }
+
 }
 
 /**
@@ -844,8 +923,11 @@ public PrintConsoleReport(client)
                 PrintToConsole(i, bufDetailedHeader);
                 PrintToConsole(i, bufDetailed);
 
-                PrintToConsole(i, bufTankHeader);
-                PrintToConsole(i, bufTank);
+                // If the tank spawned during the round, let's output the tank details
+                if (tankSpawnedDuringRound()) {
+                    PrintToConsole(i, bufTankHeader);
+                    PrintToConsole(i, bufTank);
+                }
             }
         }
     } else 
@@ -871,14 +953,18 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new zombieClass = 0;
     
+    // Victim details
     new victimId = GetEventInt(event, "userid");
     new victim = GetClientOfUserId(victimId);
     
+    // Attacker details
     new attackerId = GetEventInt(event, "attacker");
     new attacker = GetClientOfUserId(attackerId);
     
+    // Misc details
     new damageDone = GetEventInt(event, "dmg_health");
     new healthRemaining = GetEventInt(event, "health");
+    new dmgType = GetEventInt(event, "type");
 
     //PrintToChatAll("Hurt: %d (%d), attacker: %d (%d), health remaining: %d, damage: %d", victimId, victim, attackerId, attacker, healthRemaining, damageDone);
     
@@ -937,6 +1023,12 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
 
         // Otherwise if infected are inflicting damage on a survivor
         else if (GetClientTeam(attacker) == TEAM_INFECTED && GetClientTeam(victim) == TEAM_SURVIVOR) {
+            // If we got hit by a tank, let's see what type of damage it was
+            // PrintToChatAll("aType: %d - Damage: %d", dmgType, damageDone);
+            // If it was from a rock throw
+            if (tankThrow) {
+                rocksEaten[victim]++;
+            }
             damageReceived[victim] += damageDone;
         }
     }
@@ -1194,22 +1286,31 @@ String: GetMVPString()
     }
     
 
-    // build console buffer
-    // -----------------------------------
+    /**
+     * Build the console buffers
+     */
+
+    // Clear the buffers
     sConsoleBuf = "";
     sDetailedConsoleBuf = "";
+    sTankConsoleBuf = "";
 
+    // Some constants
     new const max_name_len = 20;
     new const s_len = 15;
+
+    // Basic statistics data values
     decl String:name[MAX_NAME_LENGTH];
     decl String:sikills[s_len], String:sidamage[s_len], String:cikills[s_len];
     decl String:siprc[s_len], String:ciprc[s_len];
     decl String:tankdmg[s_len], String:witchdmg[s_len], String:ff[s_len];
+
+    // Detailed statistics data values
     decl String:pillUsage[s_len], String:boomPops[s_len], String:dmgReceived[s_len], String:pinned[s_len];
     decl String:tankDmg[s_len], String:hunterDmg[s_len], String:jockeyDmg[s_len], String:chargerDmg[s_len], String:smokerDmg[s_len], String:spitterDmg[s_len], String:boomerDmg[s_len], String:witchDmg[s_len];
     
     // Tank statistics data values
-    decl String:siDuringTank[s_len], String:commonDuringTank[s_len], String:dmgToTank[s_len], String:tankPercentage[s_len], String:commonPercent[s_len], String:siPercent[s_len];
+    decl String:siDuringTank[s_len], String:commonDuringTank[s_len], String:dmgToTank[s_len], String:tankPercentage[s_len], String:commonPercent[s_len], String:siPercent[s_len], String:rocksAte[s_len];
 
     new teamCount = GetConVarInt(hTeamSize);
     new i;  // tmp clientid
@@ -1220,6 +1321,7 @@ String: GetMVPString()
     new Float: tot_siprc = 0.0;
     new Float: tot_ciprc = 0.0;
     
+    // Let's iterate through the players
     for (new j = 1; j <= teamCount; j++)
     {
         /*
@@ -1258,7 +1360,10 @@ String: GetMVPString()
         name = sTmpString;
         name[max_name_len] = 0;                     // terminates name at max length
         
-        // Basic statistics
+
+        /**
+         * Let's output a range of basic statistics
+         */
         Format(sidamage,    s_len, "%8d",   iDidDamageAll[i]);
         Format(siprc,       s_len, "%7.1f", (float(iDidDamageAll[i]) / float(iTotalDamageAll)) * 100 );
         Format(sikills,     s_len, "%8d",   iGotKills[i]);
@@ -1268,13 +1373,6 @@ String: GetMVPString()
         Format(witchdmg,    s_len, "%6d",   iDidDamageWitch[i]);
         Format(ff,          s_len, "%6d",   iDidFF[i]);
 
-        // Detailed statistics
-
-
-/*
-        Format(buf, CONBUFSIZELARGE, "%s| Name                 | Damage   | Percent | SI Kills | Commons  | Percent | Tank   | Witch  | FF           |\n", buf);
-        Format(buf, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|--------------|\n", buf);
-*/
         // Format the basic stats
         Format(sConsoleBuf, CONBUFSIZE,
             "%s| %20s | %8s | %7s | %8s | %8s | %7s | %6s | %6s | %6s                                   |\n",
@@ -1313,10 +1411,11 @@ String: GetMVPString()
         Format(tankPercentage,  s_len, "%7.1f", (float(iDidDamageTank[i]) / float(iTotalDamageTank)) * 100 );
         Format(commonPercent,  s_len, "%7.1f", (float(commonKilledDuringTank[i]) / float(ttlCommonKilledDuringTank)) * 100 );
         Format(siPercent,  s_len, "%7.1f", (float(siDmgDuringTank[i]) / float(ttlSiDmgDuringTank)) * 100 );
+        Format(rocksAte, s_len, "%8d", rocksEaten[i]);
 
         Format(sTankConsoleBuf, CONBUFSIZE,
-            "%s| %20s | %9s | %8s | %8s | %8s | %7s | %8s |\n",
-            sTankConsoleBuf, name, dmgToTank, tankPercentage, commonDuringTank, commonPercent, siDuringTank, siPercent
+            "%s| %20s | %9s | %8s | %8s | %8s | %7s | %8s | %8s | \n",
+            sTankConsoleBuf, name, dmgToTank, tankPercentage, commonDuringTank, commonPercent, siDuringTank, siPercent, rocksAte
         );
 
         //| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked   | Pinned                             |
