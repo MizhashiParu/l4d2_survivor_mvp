@@ -138,7 +138,8 @@ new                 siDmgDuringTank[MAXPLAYERS + 1];            // SI killed dur
 new                 ttlSiDmgDuringTank = 0;                     // Total SI killed during the tank
 new     bool:       tankThrow;                                  // Whether or not the tank has thrown a rock
 new                 rocksEaten[MAXPLAYERS + 1];                 // The amount of rocks a player 'ate'.
-new     int:         rockIndex;
+new     int:        rockIndex;                                  // The index of the rock (to detect how many times we were rocked)
+new                 ttlPinnedDuringTank[MAXPLAYERS + 1];        // The total times we were pinned when the tank was up
 
 
 new                 iTotalKills;                                // prolly more efficient to store than to recalculate
@@ -347,6 +348,7 @@ public OnClientPutInServer(client)
         commonKilledDuringTank[client] = 0;
         siDmgDuringTank[client] = 0;
         rocksEaten[client] = 0;
+        ttlPinnedDuringTank[client] = 0;
         
         // store name for later reference
         strcopy(sClientName[client], 64, tmpBuffer);
@@ -429,6 +431,7 @@ public ScavRoundStart(Handle:event)
         commonKilledDuringTank[i] = 0;
         siDmgDuringTank[i] = 0;
         rocksEaten[i] = 0;
+        ttlPinnedDuringTank[i] = 0;
     }
     iTotalKills = 0;
     iTotalCommon = 0;
@@ -479,6 +482,7 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
         commonKilledDuringTank[i] = 0;
         siDmgDuringTank[i] = 0;
         rocksEaten[i] = 0;
+        ttlPinnedDuringTank[i] = 0;
     }
     iTotalKills = 0;
     iTotalCommon = 0;
@@ -778,6 +782,10 @@ public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_CHARGER]++;
     totalPinned[client]++;
+
+    if (tankSpawned) {
+        ttlPinnedDuringTank[client]++;
+    }
 }
 
 /**
@@ -792,6 +800,10 @@ public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_JOCKEY]++;
     totalPinned[client]++;
+
+    if (tankSpawned) {
+        ttlPinnedDuringTank[client]++;
+    }
 }
 
 /** 
@@ -806,6 +818,10 @@ public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_HUNTER]++;
     totalPinned[client]++;
+
+    if (tankSpawned) {
+        ttlPinnedDuringTank[client]++;
+    }
 }
 
 /**
@@ -820,6 +836,10 @@ public smokerChoke(Handle:event, const String:name[], bool:dontBroadcast)
 
     timesPinned[client][ZC_SMOKER]++;
     totalPinned[client]++;
+
+    if (tankSpawned) {
+        ttlPinnedDuringTank[client]++;
+    }
 }
 
 /**
@@ -1292,7 +1312,7 @@ String: GetMVPString()
     decl String:tankDmg[s_len], String:hunterDmg[s_len], String:jockeyDmg[s_len], String:chargerDmg[s_len], String:smokerDmg[s_len], String:spitterDmg[s_len], String:boomerDmg[s_len], String:witchDmg[s_len];
     
     // Tank statistics data values
-    decl String:siDuringTank[s_len], String:commonDuringTank[s_len], String:dmgToTank[s_len], String:tankPercentage[s_len], String:commonPercent[s_len], String:siPercent[s_len], String:rocksAte[s_len];
+    decl String:siDuringTank[s_len], String:commonDuringTank[s_len], String:dmgToTank[s_len], String:tankPercentage[s_len], String:commonPercent[s_len], String:siPercent[s_len], String:rocksAte[s_len], String:ttlPinned[s_len];
 
     new teamCount = GetConVarInt(hTeamSize);
     new i;  // tmp clientid
@@ -1394,10 +1414,11 @@ String: GetMVPString()
         Format(commonPercent,  s_len, "%7.1f", (float(commonKilledDuringTank[i]) / float(ttlCommonKilledDuringTank)) * 100 );
         Format(siPercent,  s_len, "%7.1f", (float(siDmgDuringTank[i]) / float(ttlSiDmgDuringTank)) * 100 );
         Format(rocksAte, s_len, "%6d", rocksEaten[i]);
+        Format(ttlPinned, s_len, "%8d", ttlPinnedDuringTank[i]);
 
         Format(sTankConsoleBuf, CONBUFSIZE,
-            "%s| %20s | %9s | %8s | %8s | %8s | %7s | %8s | %6s | \n",
-            sTankConsoleBuf, name, dmgToTank, tankPercentage, commonDuringTank, commonPercent, siDuringTank, siPercent, rocksAte
+            "%s| %20s | %9s | %8s | %8s | %8s | %7s | %8s | %6s | %8s | \n",
+            sTankConsoleBuf, name, dmgToTank, tankPercentage, commonDuringTank, commonPercent, siDuringTank, siPercent, rocksAte, ttlPinned
         );
 
         //| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked | Pinned                             |
