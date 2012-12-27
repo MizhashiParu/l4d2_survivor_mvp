@@ -131,14 +131,14 @@ new                 boomerPops[MAXPLAYERS + 1];                 // total boomer 
 new                 damageReceived[MAXPLAYERS + 1];             // Damage received
 
 // Tank stats
-new     bool:       tankSpawned = false;                        // When tank is spawned
+new                tankSpawned = false;                        // When tank is spawned
 new                 commonKilledDuringTank[MAXPLAYERS + 1];     // Common killed during the tank
 new                 ttlCommonKilledDuringTank = 0;              // Common killed during the tank
 new                 siDmgDuringTank[MAXPLAYERS + 1];            // SI killed during the tank
 new                 ttlSiDmgDuringTank = 0;                     // Total SI killed during the tank
-new     bool:       tankThrow;                                  // Whether or not the tank has thrown a rock
+new                tankThrow;                                  // Whether or not the tank has thrown a rock
 new                 rocksEaten[MAXPLAYERS + 1];                 // The amount of rocks a player 'ate'.
-new     int:        rockIndex;                                  // The index of the rock (to detect how many times we were rocked)
+new                 rockIndex;                                  // The index of the rock (to detect how many times we were rocked)
 new                 ttlPinnedDuringTank[MAXPLAYERS + 1];        // The total times we were pinned when the tank was up
 
 
@@ -151,8 +151,8 @@ new                 iTotalDamageAll;
 new                 iTotalFF;
 
 new                 iRoundNumber;
-new     bool:       bInRound;
-new     bool:       bPlayerLeftStartArea;                       // used for tracking FF when RUP enabled
+new                 bInRound;
+new                 bPlayerLeftStartArea;                       // used for tracking FF when RUP enabled
 
 new     String:     sConsoleBuf[CONBUFSIZE];                    // used for spamming table of stats to console
 new     String:     sDetailedConsoleBuf[CONBUFSIZE];            // used for detailed table of stats to console
@@ -255,7 +255,7 @@ public OnPluginStart()
     HookEvent("tank_killed", tankKilled);
     HookEvent("tank_spawn", tankSpawn);
     HookEvent("ability_use", abilityUseEvent);
-    HookEvent("tank_frustrated", tankFrustrated);
+    //HookEvent("tank_frustrated", tankFrustrated);
 
     // Catching data
     HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Post);
@@ -948,16 +948,16 @@ public PrintConsoleReport(client)
         //PrintToConsoleClient(client, "%s", bufBasic);
         if(IsClientAndInGame(client))
         {
-            PrintToConsole(i, bufBasicHeader);
-            PrintToConsole(i, bufBasic);
+            PrintToConsole(client, bufBasicHeader);
+            PrintToConsole(client, bufBasic);
 
-            PrintToConsole(i, bufDetailedHeader);
-            PrintToConsole(i, bufDetailed);
+            PrintToConsole(client, bufDetailedHeader);
+            PrintToConsole(client, bufDetailed);
 
             // If the tank spawned during the round, let's output the tank details
             if (tankSpawnedDuringRound()) {
-                PrintToConsole(i, bufTankHeader);
-                PrintToConsole(i, bufTank);
+                PrintToConsole(client, bufTankHeader);
+                PrintToConsole(client, bufTank);
             }
         }
     }
