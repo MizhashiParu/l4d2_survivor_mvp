@@ -255,6 +255,7 @@ public OnPluginStart()
     HookEvent("tank_killed", tankKilled);
     HookEvent("tank_spawn", tankSpawn);
     HookEvent("ability_use", abilityUseEvent);
+    HookEvent("tank_frustrated", tankFrustrated);
 
     // Catching data
     HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Post);
@@ -737,8 +738,16 @@ public Action:abilityUseEvent(Handle:event, const String:name[], bool:dontBroadc
     if(StrEqual(ability, "ability_throw", true)) {
         tankThrow = true;
     }
-
 }
+
+/**
+ * Tank frustrated
+ */
+/*public tankFrustrated(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
+    PrintToChatAll("Tank frustrated: %s", client);
+}*/
 
 /**
  * Track pill usage
@@ -939,10 +948,17 @@ public PrintConsoleReport(client)
         //PrintToConsoleClient(client, "%s", bufBasic);
         if(IsClientAndInGame(client))
         {
-            PrintToConsole(client, "Testing123");
-            PrintToConsole(client, bufBasic);
-            PrintToConsole(client, bufDetailed);
-            PrintToConsole(client, bufTank);
+            PrintToConsole(i, bufBasicHeader);
+            PrintToConsole(i, bufBasic);
+
+            PrintToConsole(i, bufDetailedHeader);
+            PrintToConsole(i, bufDetailed);
+
+            // If the tank spawned during the round, let's output the tank details
+            if (tankSpawnedDuringRound()) {
+                PrintToConsole(i, bufTankHeader);
+                PrintToConsole(i, bufTank);
+            }
         }
     }
 }
