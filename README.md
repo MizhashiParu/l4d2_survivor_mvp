@@ -30,4 +30,3 @@ A lot of the code needs to be cleaned up and refactored. I suppose after all of 
     - Time spent LOSing tank.
   - Misc stats
     - Track skeets (I might hold off on this for a bit as it's going to be a bit annoying)
-  - Add command to print stats to console (so we can view stats mid-game, not just at the end of round)
