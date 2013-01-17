@@ -1117,6 +1117,19 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
            
         }
     }
+
+    /**
+     * Are we tracking the tank? 
+     * This is a secondary measure. For some reason when I test locally in PM, the
+     * tank_killed event is triggered, but when I test in a custom config, it's not.
+     * Hopefully this should fix it.
+     */
+    if (victimId && IsClientAndInGame(victim)) {
+        zombieClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
+        if (zombieClass == ZC_TANK) {
+            tankSpawned = false;
+        }
+    }
 }
 
 // Was the zombie a hunter?
