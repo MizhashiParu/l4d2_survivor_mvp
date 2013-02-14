@@ -712,6 +712,7 @@ public OnEntityCreated(entity, const String:classname[])
 
     if(StrEqual(classname, "tank_rock", true))  {
         rockIndex = entity;
+        tankThrow = true;
     }
 }
 
@@ -739,15 +740,6 @@ public Action:abilityUseEvent(Handle:event, const String:name[], bool:dontBroadc
         tankThrow = true;
     }
 }
-
-/**
- * Tank frustrated
- */
-/*public tankFrustrated(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    new client = GetClientOfUserId(GetEventInt(event, "userid")); 
-    PrintToChatAll("Tank frustrated: %s", client);
-}*/
 
 /**
  * Track pill usage
@@ -986,9 +978,8 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
         // If a survivor is attacking infected
         if (GetClientTeam(attacker) == TEAM_SURVIVOR && GetClientTeam(victim) == TEAM_INFECTED)
         {
-            // survivor on zombie action
             zombieClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
-            
+
             // Increment the damage for that class to the total
             iDidDamageClass[attacker][zombieClass] += damageDone;
             //PrintToConsole(attacker, "Attacked: %d - Dmg: %d", zombieClass, damageDone);
@@ -1035,9 +1026,11 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
 
         // Otherwise if infected are inflicting damage on a survivor
         else if (GetClientTeam(attacker) == TEAM_INFECTED && GetClientTeam(victim) == TEAM_SURVIVOR) {
+             zombieClass = GetEntProp(attacker, Prop_Send, "m_zombieClass");
+
             // If we got hit by a tank, let's see what type of damage it was
             // If it was from a rock throw
-            if (tankThrow) {
+            if (tankThrow && zombieClass == ZC_TANK && damageDone == 24) {
                 rocksEaten[victim]++;
             }
             damageReceived[victim] += damageDone;
