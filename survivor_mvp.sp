@@ -614,7 +614,7 @@ public Action:ShowMVPStats_Cmd(client, args)
 }
 
 public bool:tankSpawnedDuringRound() {
-    return ttlSiDmgDuringTank > 0 || ttlCommonKilledDuringTank > 0 || iTotalDamageTank > 0;
+    return tankSpawned == false && (ttlSiDmgDuringTank > 0 || ttlCommonKilledDuringTank > 0 || iTotalDamageTank > 0);
 }
 
 public Action:delayedMVPPrint(Handle:timer)
@@ -922,11 +922,8 @@ public PrintConsoleReport(client)
     // If we're not the only client (I'm assuming) loop through and output.
     if (!client)
     {
-        //PrintToConsoleAll("%s%s%s", bufBasic, bufDetailed, bufTank);
-        new index = 0;
         for(new i = 1; i <= MaxClients; i++)
         {
-            index = i;
             if(IsClientAndInGame(i))
             {
                 //VFormat(buffer, sizeof(buffer), format, 2);
@@ -936,7 +933,7 @@ public PrintConsoleReport(client)
                 PrintToConsole(i, bufDetailedHeader);
                 PrintToConsole(i, bufDetailed);
 
-                // If the tank spawned during the round, let's output the tank details
+                // If the tank spawned during the round, let's output the tank details (and only if the tank isn't up)
                 if (tankSpawnedDuringRound()) {
                     PrintToConsole(i, bufTankHeader);
                     PrintToConsole(i, bufTank);
@@ -945,7 +942,6 @@ public PrintConsoleReport(client)
         }
     } else 
     {
-        //PrintToConsoleClient(client, "%s", bufBasic);
         if(IsClientAndInGame(client))
         {
             PrintToConsole(client, bufBasicHeader);
@@ -983,11 +979,7 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
     
     // Misc details
     new damageDone = GetEventInt(event, "dmg_health");
-    new healthRemaining = GetEventInt(event, "health");
-    new dmgType = GetEventInt(event, "type");
 
-    //PrintToChatAll("Hurt: %d (%d), attacker: %d (%d), health remaining: %d, damage: %d", victimId, victim, attackerId, attacker, healthRemaining, damageDone);
-    
     // no world damage or flukes or whatevs, no bot attackers, no infected-to-infected damage
     if (victimId && attackerId && IsClientAndInGame(victim) && IsClientAndInGame(attacker))
     {
@@ -1096,9 +1088,6 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
     new attackerId = GetEventInt(event, "attacker");
     new attacker = GetClientOfUserId(attackerId);
 
-    // Get the damage type
-    new damagetype = GetEventInt(event, "type");
-    
     // no world kills or flukes or whatevs, no bot attackers
     if (victimId && attackerId && IsClientAndInGame(victim) && IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR)
     {
@@ -1110,11 +1099,6 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
             // store kill to count for attacker id
             iGotKills[attacker]++;
             iTotalKills++;
-        }
-
-        // If we killed a hunter
-        if (isHunter(zombieClass)) {
-           
         }
     }
 
@@ -1133,7 +1117,7 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
 }
 
 // Was the zombie a hunter?
-public bool:isHunter(int:zombieClass) {
+public bool:isHunter(zombieClass) {
     return zombieClass == ZC_HUNTER;
 }
 
@@ -1347,11 +1331,7 @@ String: GetMVPString()
     new i;  // tmp clientid
     new mpv_done[4];
     new mvp_losers[3];
-    
-    new tot_sidmg, tot_sikills, tot_cikills, tot_tank, tot_witch;
-    new Float: tot_siprc = 0.0;
-    new Float: tot_ciprc = 0.0;
-    
+
     // Let's iterate through the players
     for (new j = 1; j <= teamCount; j++)
     {
@@ -1540,32 +1520,6 @@ stock getSurvivor(exclude[4])
     }
     return 0;
 }
-
-PrintToConsoleAll(const String:format[], any:...)
-{
-    decl String:buffer[CONBUFSIZELARGE];
-
-    for(new i = 1; i <= MaxClients; i++)
-    {
-        if(IsClientAndInGame(i))
-        {
-            VFormat(buffer, sizeof(buffer), format, 2);
-            PrintToConsole(i, buffer);
-        }
-    }
-}
-
-PrintToConsoleClient(client, const String:format[], any:...)
-{
-    decl String:buffer[CONBUFSIZELARGE];
-
-    if(IsClientAndInGame(client))
-    {
-        VFormat(buffer, sizeof(buffer), format, 3);
-        PrintToConsole(client, buffer);
-    }
-}
-
 
 public stripUnicode(String:testString[MAX_NAME_LENGTH])
 {
