@@ -688,11 +688,11 @@ public Action:delayedMVPPrint(Handle:timer)
         {
             if (IsClientAndInGame(mvp_FF_losers[i]) && !IsFakeClient(mvp_FF_losers[i])) {
                 if (iBrevityFlags & BREV_PERCENT) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - FF: #\x03%d \x01(\x05%d \x01dmg)", (i + 2), iDidFF[mvp_FF_losers[i]]);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] Your rank - FF: #\x03%d \x01(\x05%d \x01dmg)", (i + 2), iDidFF[mvp_FF_losers[i]]);
                 } else if (iBrevityFlags & BREV_ABSOLUTE) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - FF: #\x03%d \x01(dmg \x04%.0f%%\x01)", (i + 2), (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] Your rank - FF: #\x03%d \x01(dmg \x04%.0f%%\x01)", (i + 2), (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
                 } else {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - FF: #\x03%d \x01(\x05%d \x01dmg [\x04%.0f%%\x01])", (i + 2), iDidFF[mvp_FF_losers[i]], (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] Your rank - FF: #\x03%d \x01(\x05%d \x01dmg [\x04%.0f%%\x01])", (i + 2), iDidFF[mvp_FF_losers[i]], (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
                 }
                 PrintToChat(mvp_FF_losers[i], "\x01%s", tmpBuffer);
             }
@@ -1283,11 +1283,11 @@ String: GetMVPString()
         else
         {
             if (iBrevityFlags & BREV_PERCENT) {
-                Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] FF:\x03 %s \x01(\x05%d \x01dmg)\n", mvp_FF_name, iDidFF[mvp_FF]);
+                Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] FF:\x03 %s \x01(\x05%d \x01dmg)\n", mvp_FF_name, iDidFF[mvp_FF]);
             } else if (iBrevityFlags & BREV_ABSOLUTE) {
-                Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] FF:\x03 %s \x01(\x04%.0f%%\x01)\n", mvp_FF_name, (float(iDidFF[mvp_FF]) / float(iTotalFF)) * 100);
+                Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] FF:\x03 %s \x01(\x04%.0f%%\x01)\n", mvp_FF_name, (float(iDidFF[mvp_FF]) / float(iTotalFF)) * 100);
             } else {
-                Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] FF:\x03 %s \x01(\x05%d \x01dmg [\x04%.0f%%\x01])\n", mvp_FF_name, iDidFF[mvp_FF], (float(iDidFF[mvp_FF]) / float(iTotalFF)) * 100);
+                Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] FF:\x03 %s \x01(\x05%d \x01dmg [\x04%.0f%%\x01])\n", mvp_FF_name, iDidFF[mvp_FF], (float(iDidFF[mvp_FF]) / float(iTotalFF)) * 100);
             }
             StrCat(printBuffer, sizeof(printBuffer), tmpBuffer);
         }
@@ -1380,7 +1380,7 @@ String: GetMVPString()
         // Format the basic stats
         Format(sConsoleBuf, CONBUFSIZE,
             "%s| %20s | %8s | %7s | %8s | %8s | %7s | %6s | %6s | %6s                                   |\n",
-            sConsoleBuf, name, sidamage, siprc, sikills, cikills, ciprc, tankdmg, witchdmg, ff
+            sConsoleBuf, name, sidamage, siprc, sikills, cikills, ciprc, tankSpawnedDuringRound() : tankdmg ? 0, witchdmg, ff
         );
 
         
