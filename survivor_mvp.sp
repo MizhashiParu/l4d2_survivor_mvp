@@ -1373,14 +1373,14 @@ String: GetMVPString()
         Format(sikills,     s_len, "%8d",   iGotKills[i]);
         Format(cikills,     s_len, "%8d",   iGotCommon[i]);
         Format(ciprc,       s_len, "%7.1f", (float(iGotCommon[i]) / float(iTotalCommon)) * 100 );
-        Format(tankdmg,     s_len, "%6d",   iDidDamageTank[i]);
+        Format(tankdmg,     s_len, "%6d",   tankSpawnedDuringRound() ? iDidDamageTank[i] : 0);
         Format(witchdmg,    s_len, "%6d",   iDidDamageWitch[i]);
         Format(ff,          s_len, "%6d",   iDidFF[i]);
 
         // Format the basic stats
         Format(sConsoleBuf, CONBUFSIZE,
             "%s| %20s | %8s | %7s | %8s | %8s | %7s | %6s | %6s | %6s                                   |\n",
-            sConsoleBuf, name, sidamage, siprc, sikills, cikills, ciprc, tankSpawnedDuringRound() : tankdmg ? 0, witchdmg, ff
+            sConsoleBuf, name, sidamage, siprc, sikills, cikills, ciprc, tankdmg, witchdmg, ff
         );
 
         
