@@ -40,48 +40,48 @@
 
 
 /**
- * Issues:
- *  - Add damage received from common
- */
+* Issues:
+*  - Add damage received from common
+*/
 
 /*
-        Changelog
-        ---------
-        0.2c
-            - added console output table for more stats, fixed it's display
-            - fixed console display to always display each player on the survivor team
-            
-        0.1
-            - fixed common MVP ranks being messed up.
-            - finally worked in PluginEnabled cvar
-            - made FF tracking switch to enabled automatically if brevity flag 4 is unset
-            - fixed a bug that caused FF to always report as "no friendly fire" when tracking was disabled
-            - adjusted formatting a bit
-            - made FF stat hidden by default
-            - made convars actually get tracked (doh)
-            - added friendly fire tracking (sm_survivor_mvp_trackff 1/0)
-            - added brevity-flags cvar for changing verbosity of MVP report (sm_survivor_mvp_brevity bitwise, as shown)
-            - discount FF damage before match is live if RUP is active.
-            - fixed problem with clients disconnecting before mvp report
-            - improved consistency after client reconnect (name-based)
-            - fixed mvp stats double showing in scavenge (round starts)
-            - now shows if MVP is a bot
-            - cleaned up code
-            - fixed for scavenge, now shows stats for every scavenge round
-            - fixed damage/kills getting recorded for infected players, skewing MVP stats
-            - added rank display for non-MVP clients
- */
+Changelog
+---------
+0.2c
+- added console output table for more stats, fixed it's display
+- fixed console display to always display each player on the survivor team
+
+0.1
+- fixed common MVP ranks being messed up.
+- finally worked in PluginEnabled cvar
+- made FF tracking switch to enabled automatically if brevity flag 4 is unset
+- fixed a bug that caused FF to always report as "no friendly fire" when tracking was disabled
+- adjusted formatting a bit
+- made FF stat hidden by default
+- made convars actually get tracked (doh)
+- added friendly fire tracking (sm_survivor_mvp_trackff 1/0)
+- added brevity-flags cvar for changing verbosity of MVP report (sm_survivor_mvp_brevity bitwise, as shown)
+- discount FF damage before match is live if RUP is active.
+- fixed problem with clients disconnecting before mvp report
+- improved consistency after client reconnect (name-based)
+- fixed mvp stats double showing in scavenge (round starts)
+- now shows if MVP is a bot
+- cleaned up code
+- fixed for scavenge, now shows stats for every scavenge round
+- fixed damage/kills getting recorded for infected players, skewing MVP stats
+- added rank display for non-MVP clients
+*/
 /*
-    Brevity flags:
-        1       leave out SI stats
-        2       leave out CI stats
-        4       leave out FF stats
-        8       leave out rank notification
-        16   (reserved)
-        32      leave out percentages
-        64      leave out absolutes
-        
- */
+Brevity flags:
+1       leave out SI stats
+2       leave out CI stats
+4       leave out FF stats
+8       leave out rank notification
+16   (reserved)
+32      leave out percentages
+64      leave out absolutes
+
+*/
 
 public Plugin:myinfo =
 {
@@ -160,10 +160,10 @@ new     String:     sTankConsoleBuf[CONBUFSIZE];                // used for spam
 new     String:     sTmpString[MAX_NAME_LENGTH];                // just used because I'm not going to break my head over why string assignment parameter passing doesn't work
 
 /*
- *      Natives
- *      =======
- */
- 
+*      Natives
+*      =======
+*/
+
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
     CreateNative("SURVMVP_GetMVP", Native_GetMVP);
@@ -233,9 +233,9 @@ public Native_GetMVPCIPercent(Handle:plugin, numParams)
 
 
 /*
- *      init
- *      ====
- */
+*      init
+*      ====
+*/
 
 public OnPluginStart()
 {
@@ -256,7 +256,7 @@ public OnPluginStart()
     HookEvent("tank_spawn", tankSpawn);
     HookEvent("ability_use", abilityUseEvent);
     //HookEvent("tank_frustrated", tankFrustrated);
-
+    
     // Catching data
     HookEvent("player_hurt", PlayerHurt_Event, EventHookMode_Post);
     HookEvent("player_death", PlayerDeath_Event, EventHookMode_Post);
@@ -316,7 +316,7 @@ public OnPluginStart()
 /*
 public OnPluginEnd()
 {
-    // nothing
+// nothing
 }
 */
 
@@ -335,8 +335,8 @@ public OnClientPutInServer(client)
         iDidDamageWitch[client] = 0;
         iDidDamageTank[client] = 0;
         iDidFF[client] = 0;
-
-
+        
+        
         //@todo detailed statistics - set to 0
         for (new siClass = ZC_SMOKER; siClass <= ZC_TANK; siClass++) {
             iDidDamageClass[client][siClass] = 0;
@@ -357,9 +357,9 @@ public OnClientPutInServer(client)
 }
 
 /*
- *      convar changes
- *      ==============
- */
+*      convar changes
+*      ==============
+*/
 
 public ConVarChange_CountTankDamage(Handle:cvar, const String:oldValue[], const String:newValue[]) {
     bCountTankDamage = StringToInt(newValue) != 0;
@@ -383,9 +383,9 @@ public ConVarChange_RUPActive(Handle:cvar, const String:oldValue[], const String
 }
 
 /*
- *      map load / round start/end
- *      ==========================
- */
+*      map load / round start/end
+*      ==========================
+*/
 
 public Action:PlayerLeftStartArea(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -419,7 +419,7 @@ public ScavRoundStart(Handle:event)
         iDidDamageWitch[i] = 0;
         iDidDamageTank[i] = 0;
         iDidFF[i] = 0;
-
+        
         //@todo detailed statistics - set to 0
         for (new siClass = ZC_SMOKER; siClass <= ZC_TANK; siClass++) {
             iDidDamageClass[i][siClass] = 0;
@@ -470,7 +470,7 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
         iDidDamageWitch[i] = 0;
         iDidDamageTank[i] = 0;
         iDidFF[i] = 0;
-
+        
         //@todo detailed statistics init to 0
         for (new siClass = ZC_SMOKER; siClass <= ZC_TANK; siClass++) {
             iDidDamageClass[i][siClass] = 0;
@@ -494,7 +494,7 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
     ttlCommonKilledDuringTank = 0;
     iTotalDamageTank = 0;
     tankThrow = false;
-
+    
     tankSpawned = false;
 }
 
@@ -505,7 +505,7 @@ public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
         if (bInRound)
         {
             if (GetConVarBool(hPluginEnabled))
-                    CreateTimer(2.0, delayedMVPPrint);   // shorter delay for scavenge.
+                CreateTimer(2.0, delayedMVPPrint);   // shorter delay for scavenge.
             bInRound = false;
         }
     }
@@ -516,19 +516,19 @@ public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
         {
             // only show / log stuff when the round is done "the first time"
             if (GetConVarBool(hPluginEnabled))
-                    CreateTimer(4.0, delayedMVPPrint);
+                CreateTimer(4.0, delayedMVPPrint);
             bInRound = false;
         }
     }
-
+    
     tankSpawned = false;
 }
 
 
 /*
- *      cmds / reports
- *      ==============
- */
+*      cmds / reports
+*      ==============
+*/
 
 public Action:Say_Cmd(client, args)
 {
@@ -611,10 +611,6 @@ public Action:ShowMVPStats_Cmd(client, args)
         }
         
     }
-}
-
-public bool:tankSpawnedDuringRound() {
-    return tankSpawned == false && (ttlSiDmgDuringTank > 0 || ttlCommonKilledDuringTank > 0 || iTotalDamageTank > 0);
 }
 
 public Action:delayedMVPPrint(Handle:timer)
@@ -701,15 +697,15 @@ public Action:delayedMVPPrint(Handle:timer)
 }
 
 /**
- * When an entity is created (which we use to track rocks)
- * don't actually need this
- */
+* When an entity is created (which we use to track rocks)
+* don't actually need this
+*/
 public OnEntityCreated(entity, const String:classname[])
 { 
     if(! tankThrow) {
         return;
     }
-
+    
     if(StrEqual(classname, "tank_rock", true))  {
         rockIndex = entity;
         tankThrow = true;
@@ -717,8 +713,8 @@ public OnEntityCreated(entity, const String:classname[])
 }
 
 /**
- * When an entity has been destroyed (i.e. when a rock lands on someone)
- */
+* When an entity has been destroyed (i.e. when a rock lands on someone)
+*/
 public OnEntityDestroyed(entity)
 {   
     // The rock has been destroyed
@@ -728,13 +724,13 @@ public OnEntityDestroyed(entity)
 }
 
 /**
- * When an infected uses their ability
- */
+* When an infected uses their ability
+*/
 public Action:abilityUseEvent(Handle:event, const String:name[], bool:dontBroadcast)
 {
     decl String:ability[32];
     GetEventString(event, "ability", ability, 32);
-
+    
     // If tank is throwing a rock
     if(StrEqual(ability, "ability_throw", true)) {
         tankThrow = true;
@@ -742,25 +738,25 @@ public Action:abilityUseEvent(Handle:event, const String:name[], bool:dontBroadc
 }
 
 /**
- * Track pill usage
- */
+* Track pill usage
+*/
 public pillsUsedEvent(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "userid")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
     }
-
+    
     pillsUsed[client]++;
 }
 
 /**
- * Track boomer pops
- */
+* Track boomer pops
+*/
 public boomerExploded(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // We only want to track pops where the boomer didn't bile anyone
-    new bool:biled = GetEventInt(event, "splashedbile");
+    new bool:biled = GetEventBool(event, "splashedbile");
     if (! biled) {
         new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
         if (attacker == 0 || ! IsClientInGame(attacker)) {
@@ -772,109 +768,109 @@ public boomerExploded(Handle:event, const String:name[], bool:dontBroadcast)
 
 
 /**
- * Track when someone gets charged (end of charge for level, or if someone shoots you off etc.)
- */
+* Track when someone gets charged (end of charge for level, or if someone shoots you off etc.)
+*/
 public chargerCarryEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
     }
-
+    
     timesPinned[client][ZC_CHARGER]++;
     totalPinned[client]++;
-
+    
     if (tankSpawned) {
         ttlPinnedDuringTank[client]++;
     }
 }
 
 /**
- * Track when someone gets jockeyed.
- */
+* Track when someone gets jockeyed.
+*/
 public jockeyRide(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
     }
-
+    
     timesPinned[client][ZC_JOCKEY]++;
     totalPinned[client]++;
-
+    
     if (tankSpawned) {
         ttlPinnedDuringTank[client]++;
     }
 }
 
 /** 
- * Track when someone gets huntered.
- */
+* Track when someone gets huntered.
+*/
 public hunterLunged(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
     }
-
+    
     timesPinned[client][ZC_HUNTER]++;
     totalPinned[client]++;
-
+    
     if (tankSpawned) {
         ttlPinnedDuringTank[client]++;
     }
 }
 
 /**
- * Track when someone gets smoked (we track when they start getting smoked, because anyone can get smoked)
- */
+* Track when someone gets smoked (we track when they start getting smoked, because anyone can get smoked)
+*/
 public smokerChoke(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "victim")); 
     if (client == 0 || ! IsClientInGame(client)) {
         return;
     }
-
+    
     timesPinned[client][ZC_SMOKER]++;
     totalPinned[client]++;
-
+    
     if (tankSpawned) {
         ttlPinnedDuringTank[client]++;
     }
 }
 
 /**
- * When the tank spawns
- */
+* When the tank spawns
+*/
 public tankSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
     tankSpawned = true;
 }
 
 /**
- * When the tank is killed
- */
+* When the tank is killed
+*/
 public tankKilled(Handle:event, const String:name[], bool:dontBroadcast) {
     tankSpawned = false;
 }
 
 /**
- * Output the console report.
+* Output the console report.
 
- * This seems like a really ineffective method of doing this. For some reason, it isn't outputting
- * the entire string to the console (and when I try to increase the buffer size I get an error). I
- * need to ask some of the other developers about this, but for the mean time the workaround I've 
- * used (breaking the output up in to a range of different data values) should suffice. 
- * 
- * This method also shouldn't be this long. Should be broken up in to a range of smaller methods.
- */
+* This seems like a really ineffective method of doing this. For some reason, it isn't outputting
+* the entire string to the console (and when I try to increase the buffer size I get an error). I
+* need to ask some of the other developers about this, but for the mean time the workaround I've 
+* used (breaking the output up in to a range of different data values) should suffice. 
+* 
+* This method also shouldn't be this long. Should be broken up in to a range of smaller methods.
+*/
 public PrintConsoleReport(client)
 {
     /**
-     * Let's prepare the basic information.
-     */
+    * Let's prepare the basic information.
+    */
     decl String:bufBasicHeader[CONBUFSIZE];
     decl String:bufBasic[CONBUFSIZELARGE];
-
+    
     Format(bufBasicHeader, CONBUFSIZE, "\n");
     Format(bufBasicHeader, CONBUFSIZE, "%s| Basic Statistics                                                                                                                       |\n", bufBasicHeader);
     Format(bufBasicHeader, CONBUFSIZE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|------------------------------------------|\n", bufBasicHeader);
@@ -882,13 +878,13 @@ public PrintConsoleReport(client)
     Format(bufBasicHeader, CONBUFSIZE, "%s|----------------------|----------|---------|----------|----------|---------|--------|--------|------------------------------------------|", bufBasicHeader);
     Format(bufBasic, CONBUFSIZELARGE, "%s", sConsoleBuf);
     Format(bufBasic, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|\n", bufBasic);
-
+    
     /**
-     * Let's prepare the detailed information.
-     */
+    * Let's prepare the detailed information.
+    */
     decl String:bufDetailedHeader[CONBUFSIZE];
     decl String:bufDetailed[CONBUFSIZELARGE];
-
+    
     Format(bufDetailedHeader, CONBUFSIZELARGE, "\n");
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Detailed Stats (for information on each stat see http://)                                                                              |\n", bufDetailedHeader);
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-----------------|\n", bufDetailedHeader);
@@ -896,13 +892,13 @@ public PrintConsoleReport(client)
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-----------------|", bufDetailedHeader);
     Format(bufDetailed, CONBUFSIZELARGE, "%s", sDetailedConsoleBuf);
     Format(bufDetailed, CONBUFSIZELARGE, "%s|----------------------------------------------------------------------------------------------------------------------------------------|\n", bufDetailed);
-
+    
     /**
-     * Let's prepare the tank statistics
-     */
+    * Let's prepare the tank statistics
+    */
     decl String:bufTank[CONBUFSIZELARGE];
     decl String:bufTankHeader[CONBUFSIZE];
-
+    
     Format(bufTankHeader, CONBUFSIZELARGE, "\n");
     Format(bufTankHeader, CONBUFSIZELARGE, "%s| Tank stats - Damage dealt while tank was up                                                                                            |\n", bufTankHeader);
     Format(bufTankHeader, CONBUFSIZELARGE, "%s|----------------------|-----------|----------|----------|----------|---------|----------|--------|--------------------------------------|\n", bufTankHeader);
@@ -921,12 +917,13 @@ public PrintConsoleReport(client)
                 //VFormat(buffer, sizeof(buffer), format, 2);
                 PrintToConsole(i, bufBasicHeader);
                 PrintToConsole(i, bufBasic);
-
+                
                 PrintToConsole(i, bufDetailedHeader);
                 PrintToConsole(i, bufDetailed);
-
+                
                 // If the tank spawned during the round, let's output the tank details (and only if the tank isn't up)
-                if (tankSpawnedDuringRound()) {
+                if (!tankSpawned) 
+                {
                     PrintToConsole(i, bufTankHeader);
                     PrintToConsole(i, bufTank);
                 }
@@ -938,12 +935,13 @@ public PrintConsoleReport(client)
         {
             PrintToConsole(client, bufBasicHeader);
             PrintToConsole(client, bufBasic);
-
+            
             PrintToConsole(client, bufDetailedHeader);
             PrintToConsole(client, bufDetailed);
-
+            
             // If the tank spawned during the round, let's output the tank details
-            if (tankSpawnedDuringRound()) {
+            if (!tankSpawned)  
+            {
                 PrintToConsole(client, bufTankHeader);
                 PrintToConsole(client, bufTank);
             }
@@ -953,9 +951,9 @@ public PrintConsoleReport(client)
 
 
 /*
- *      track damage/kills
- *      ==================
- */
+*      track damage/kills
+*      ==================
+*/
 
 public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -971,7 +969,7 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
     
     // Misc details
     new damageDone = GetEventInt(event, "dmg_health");
-
+    
     // no world damage or flukes or whatevs, no bot attackers, no infected-to-infected damage
     if (victimId && attackerId && IsClientAndInGame(victim) && IsClientAndInGame(attacker))
     {
@@ -979,12 +977,12 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
         if (GetClientTeam(attacker) == TEAM_SURVIVOR && GetClientTeam(victim) == TEAM_INFECTED)
         {
             zombieClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
-
+            
             // Increment the damage for that class to the total
             iDidDamageClass[attacker][zombieClass] += damageDone;
             //PrintToConsole(attacker, "Attacked: %d - Dmg: %d", zombieClass, damageDone);
             //PrintToConsole(attacker, "Total damage for %d: %d", zombieClass, iDidDamageClass[attacker][zombieClass]);
-
+            
             // separately store SI and tank damage
             if (zombieClass >= ZC_SMOKER && zombieClass < ZC_WITCH)
             {
@@ -993,7 +991,7 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
                     siDmgDuringTank[attacker] += damageDone;
                     ttlSiDmgDuringTank += damageDone;
                 }
-
+                
                 iDidDamage[attacker] += damageDone;
                 iDidDamageAll[attacker] += damageDone;
                 iTotalDamage += damageDone;
@@ -1004,7 +1002,7 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
                 // We want to track tank damage even if we're not factoring it in to our mvp result
                 iDidDamageTank[attacker] += damageDone;
                 iTotalDamageTank += damageDone;
-
+                
                 // If we're factoring it in, include it in our overall damage
                 if (bCountTankDamage)
                 {
@@ -1013,7 +1011,7 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
                 }
             }
         }
-
+        
         // Otherwise if friendly fire
         else if (GetClientTeam(attacker) == TEAM_SURVIVOR && GetClientTeam(victim) == TEAM_SURVIVOR && bTrackFF)                // survivor on survivor action == FF
         {
@@ -1023,11 +1021,11 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
                 iTotalFF += damageDone;
             }
         }
-
+        
         // Otherwise if infected are inflicting damage on a survivor
         else if (GetClientTeam(attacker) == TEAM_INFECTED && GetClientTeam(victim) == TEAM_SURVIVOR) {
-             zombieClass = GetEntProp(attacker, Prop_Send, "m_zombieClass");
-
+            zombieClass = GetEntProp(attacker, Prop_Send, "m_zombieClass");
+            
             // If we got hit by a tank, let's see what type of damage it was
             // If it was from a rock throw
             if (tankThrow && zombieClass == ZC_TANK && damageDone == 24) {
@@ -1039,14 +1037,14 @@ public PlayerHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
 }
 
 /** 
- * When the infected are hurt (i.e. when a survivor hurts an SI)
- * We want to use this to track damage done to the witch.
- */
+* When the infected are hurt (i.e. when a survivor hurts an SI)
+* We want to use this to track damage done to the witch.
+*/
 public InfectedHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // catch damage done to witch
     new victimEntId = GetEventInt(event, "entityid");
-
+    
     if (IsWitch(victimEntId))
     {
         new attackerId = GetEventInt(event, "attacker");
@@ -1059,7 +1057,7 @@ public InfectedHurt_Event(Handle:event, const String:name[], bool:dontBroadcast)
             // We want to track the witch damage regardless of whether we're counting it in our mvp stat
             iDidDamageWitch[attacker] += damageDone;
             iTotalDamageWitch += damageDone;
-
+            
             // If we're counting witch damage in our mvp stat, lets add the amount of damage done to the witch
             if (bCountWitchDamage) 
             {
@@ -1080,7 +1078,7 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
     // Get the attacker details
     new attackerId = GetEventInt(event, "attacker");
     new attacker = GetClientOfUserId(attackerId);
-
+    
     // no world kills or flukes or whatevs, no bot attackers
     if (victimId && attackerId && IsClientAndInGame(victim) && IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR)
     {
@@ -1094,13 +1092,13 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
             iTotalKills++;
         }
     }
-
+    
     /**
-     * Are we tracking the tank? 
-     * This is a secondary measure. For some reason when I test locally in PM, the
-     * tank_killed event is triggered, but when I test in a custom config, it's not.
-     * Hopefully this should fix it.
-     */
+    * Are we tracking the tank? 
+    * This is a secondary measure. For some reason when I test locally in PM, the
+    * tank_killed event is triggered, but when I test in a custom config, it's not.
+    * Hopefully this should fix it.
+    */
     if (victimId && IsClientAndInGame(victim)) {
         zombieClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
         if (zombieClass == ZC_TANK) {
@@ -1126,7 +1124,7 @@ public InfectedDeath_Event(Handle:event, const String:name[], bool:dontBroadcast
             commonKilledDuringTank[attacker]++;
             ttlCommonKilledDuringTank++;
         }
-
+        
         iGotCommon[attacker]++;
         iTotalCommon++;
         // if victimType > 2, it's an "uncommon" (of some type or other) -- do nothing with this ftpresent.
@@ -1136,9 +1134,9 @@ public InfectedDeath_Event(Handle:event, const String:name[], bool:dontBroadcast
 
 
 /*
- *      MVP string & 'sorting'
- *      ======================
- */
+*      MVP string & 'sorting'
+*      ======================
+*/
 
 String: GetMVPString()
 {
@@ -1293,45 +1291,45 @@ String: GetMVPString()
         }
     }
     
-
+    
     /**
-     * Build the console buffers
-     */
-
+    * Build the console buffers
+    */
+    
     // Clear the buffers
     sConsoleBuf = "";
     sDetailedConsoleBuf = "";
     sTankConsoleBuf = "";
-
+    
     // Some constants
     new const max_name_len = 20;
     new const s_len = 15;
-
+    
     // Basic statistics data values
     decl String:name[MAX_NAME_LENGTH];
     decl String:sikills[s_len], String:sidamage[s_len], String:cikills[s_len];
     decl String:siprc[s_len], String:ciprc[s_len];
     decl String:tankdmg[s_len], String:witchdmg[s_len], String:ff[s_len];
-
+    
     // Detailed statistics data values
     decl String:pillUsage[s_len], String:boomPops[s_len], String:dmgReceived[s_len], String:pinned[s_len];
     decl String:tankDmg[s_len], String:hunterDmg[s_len], String:jockeyDmg[s_len], String:chargerDmg[s_len], String:smokerDmg[s_len], String:spitterDmg[s_len], String:boomerDmg[s_len], String:witchDmg[s_len];
     
     // Tank statistics data values
     decl String:siDuringTank[s_len], String:commonDuringTank[s_len], String:dmgToTank[s_len], String:tankPercentage[s_len], String:commonPercent[s_len], String:siPercent[s_len], String:rocksAte[s_len], String:ttlPinned[s_len];
-
+    
     new teamCount = GetConVarInt(hTeamSize);
     new i;  // tmp clientid
     new mpv_done[4];
     new mvp_losers[3];
-
+    
     // Let's iterate through the players
     for (new j = 1; j <= teamCount; j++)
     {
         /*
-            try and sort a list by MVP SI; then by MVP CI,
-            if neither's available, just walk through the survivors
-         */
+        try and sort a list by MVP SI; then by MVP CI,
+        if neither's available, just walk through the survivors
+        */
         if (mvp_SI) {
             switch (j) {
                 case 1: { i = mvp_SI; }
@@ -1364,29 +1362,29 @@ String: GetMVPString()
         name = sTmpString;
         name[max_name_len] = 0;                     // terminates name at max length
         
-
+        
         /**
-         * Let's output a range of basic statistics
-         */
+        * Let's output a range of basic statistics
+        */
         Format(sidamage,    s_len, "%8d",   iDidDamageAll[i]);
         Format(siprc,       s_len, "%7.1f", (float(iDidDamageAll[i]) / float(iTotalDamageAll)) * 100 );
         Format(sikills,     s_len, "%8d",   iGotKills[i]);
         Format(cikills,     s_len, "%8d",   iGotCommon[i]);
         Format(ciprc,       s_len, "%7.1f", (float(iGotCommon[i]) / float(iTotalCommon)) * 100 );
-        Format(tankdmg,     s_len, "%6d",   tankSpawnedDuringRound() ? iDidDamageTank[i] : 0);
+        Format(tankdmg,     s_len, "%6d",   tankSpawned ? iDidDamageTank[i] : 0);
         Format(witchdmg,    s_len, "%6d",   iDidDamageWitch[i]);
         Format(ff,          s_len, "%6d",   iDidFF[i]);
-
+        
         // Format the basic stats
         Format(sConsoleBuf, CONBUFSIZE,
-            "%s| %20s | %8s | %7s | %8s | %8s | %7s | %6s | %6s | %6s                                   |\n",
-            sConsoleBuf, name, sidamage, siprc, sikills, cikills, ciprc, tankdmg, witchdmg, ff
+        "%s| %20s | %8s | %7s | %8s | %8s | %7s | %6s | %6s | %6s                                   |\n",
+        sConsoleBuf, name, sidamage, siprc, sikills, cikills, ciprc, tankdmg, witchdmg, ff
         );
-
+        
         
         /**
-         * Let's format the detailed statistics and add it to our console output string.
-         */
+        * Let's format the detailed statistics and add it to our console output string.
+        */
         Format(tankDmg, s_len, "%6d",   iDidDamageClass[i][ZC_TANK]);
         Format(smokerDmg, s_len, "%8d",   iDidDamageClass[i][ZC_SMOKER]);
         Format(hunterDmg, s_len, "%8d",   iDidDamageClass[i][ZC_HUNTER]);
@@ -1399,15 +1397,15 @@ String: GetMVPString()
         Format(dmgReceived, s_len, "%8d", damageReceived[i]);
         Format(pinned, s_len, "%8d", totalPinned[i]);
         Format(witchDmg, s_len, "%6d", iDidDamageClass[i][ZC_WITCH]);
-
+        
         Format(sDetailedConsoleBuf, CONBUFSIZE,
-            "%s| %20s | %8s | %7s | %8s | %8s | %8s | %7s | %8s | %8s | %7s | %5s           |\n",
-            sDetailedConsoleBuf, name, pinned, pillUsage, dmgReceived, smokerDmg, hunterDmg, boomerDmg, spitterDmg, chargerDmg, jockeyDmg, boomPops
+        "%s| %20s | %8s | %7s | %8s | %8s | %8s | %7s | %8s | %8s | %7s | %5s           |\n",
+        sDetailedConsoleBuf, name, pinned, pillUsage, dmgReceived, smokerDmg, hunterDmg, boomerDmg, spitterDmg, chargerDmg, jockeyDmg, boomPops
         );
-
+        
         /**
-         * Let's format our tank statistics
-         */
+        * Let's format our tank statistics
+        */
         
         Format(dmgToTank, s_len, "%9d", iDidDamageTank[i]);
         Format(commonDuringTank, s_len, "%8d", commonKilledDuringTank[i]);
@@ -1416,15 +1414,15 @@ String: GetMVPString()
         Format(commonPercent,  s_len, "%7.1f", (float(commonKilledDuringTank[i]) / float(ttlCommonKilledDuringTank)) * 100 );
         Format(siPercent,  s_len, "%7.1f", (float(siDmgDuringTank[i]) / float(ttlSiDmgDuringTank)) * 100 );
         Format(rocksAte, s_len, "%6d", rocksEaten[i]);
-        Format(ttlPinned, s_len, "%8d", ttlPinnedDuringTank[i]);
-
+        Format(ttlPinned, s_len, "%6d", ttlPinnedDuringTank[i]);
+        
         Format(sTankConsoleBuf, CONBUFSIZE,
-            "%s| %20s | %9s | %8s | %8s | %8s | %7s | %8s | %6s | %8s | \n",
-            sTankConsoleBuf, name, dmgToTank, tankPercentage, commonDuringTank, commonPercent, siDuringTank, siPercent, rocksAte, ttlPinned
+        "%s| %20s | %9s | %8s | %8s | %8s | %7s | %8s | %6s | %8s                             | \n",
+        sTankConsoleBuf, name, dmgToTank, tankPercentage, commonDuringTank, commonPercent, siDuringTank, siPercent, rocksAte, ttlPinned
         );
-
+        
         //| Name                 | Damage    | Percent  | Common   | Percent  | SI      | Percent  | Rocked | Pinned                             |
-            
+        
     }
     
     return printBuffer;
@@ -1466,9 +1464,9 @@ findLVPFF(excludeMeA = 0, excludeMeB = 0, excludeMeC = 0)
 
 
 /*
- *      general functions
- *      =================
- */
+*      general functions
+*      =================
+*/
 
 
 stock bool:IsClientAndInGame(index)
@@ -1570,12 +1568,12 @@ public stripUnicode(String:testString[MAX_NAME_LENGTH])
 /*
 stock bool:IsCommonInfected(iEntity)
 {
-    if(iEntity > 0 && IsValidEntity(iEntity) && IsValidEdict(iEntity))
-    {
-        decl String:strClassName[64];
-        GetEdictClassname(iEntity, strClassName, sizeof(strClassName));
-        return StrEqual(strClassName, "infected");
-    }
-    return false;
+if(iEntity > 0 && IsValidEntity(iEntity) && IsValidEdict(iEntity))
+{
+decl String:strClassName[64];
+GetEdictClassname(iEntity, strClassName, sizeof(strClassName));
+return StrEqual(strClassName, "infected");
+}
+return false;
 }
 */
