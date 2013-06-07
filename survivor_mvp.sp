@@ -544,7 +544,7 @@ public Action:Say_Cmd(client, args)
 
 public Action:SurvivorMVP_Cmd(client, args)
 {
-    decl String:printBuffer[512];
+    decl String:printBuffer[1024];
     
     printBuffer = GetMVPString();
     PrintConsoleReport(client);
@@ -564,8 +564,8 @@ public Action:ShowMVPStats_Cmd(client, args)
     // show mvp in this round
     if (client && IsClientConnected(client))
     {
-        decl String:printBuffer[512];
-        decl String:tmpBuffer[256];
+        decl String:printBuffer[1024];
+        decl String:tmpBuffer[512];
         
         printBuffer = "";
         
@@ -1140,8 +1140,8 @@ public InfectedDeath_Event(Handle:event, const String:name[], bool:dontBroadcast
 
 String: GetMVPString()
 {
-    decl String:printBuffer[512];
-    decl String:tmpBuffer[256];
+    decl String:printBuffer[1024];
+    decl String:tmpBuffer[512];
     
     decl String:tmpName[64];
     decl String:mvp_SI_name[64];
