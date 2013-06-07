@@ -615,7 +615,7 @@ public Action:ShowMVPStats_Cmd(client, args)
 
 public Action:delayedMVPPrint(Handle:timer)
 {
-    decl String:printBuffer[512];
+    decl String:printBuffer[1024];
     decl String:tmpBuffer[512];
     printBuffer = GetMVPString();
     PrintToServer("\x01%s", printBuffer);
