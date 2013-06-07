@@ -131,13 +131,12 @@ new                 boomerPops[MAXPLAYERS + 1];                 // total boomer 
 new                 damageReceived[MAXPLAYERS + 1];             // Damage received
 
 // Tank stats
-new                 tankSpawned = false;                        // When tank is spawned
-new                 tankSpawnedDuringRound = false;             // Whether or not the tank spawned during the round
+new                tankSpawned = false;                        // When tank is spawned
 new                 commonKilledDuringTank[MAXPLAYERS + 1];     // Common killed during the tank
 new                 ttlCommonKilledDuringTank = 0;              // Common killed during the tank
 new                 siDmgDuringTank[MAXPLAYERS + 1];            // SI killed during the tank
 new                 ttlSiDmgDuringTank = 0;                     // Total SI killed during the tank
-new                 tankThrow;                                  // Whether or not the tank has thrown a rock
+new                tankThrow;                                  // Whether or not the tank has thrown a rock
 new                 rocksEaten[MAXPLAYERS + 1];                 // The amount of rocks a player 'ate'.
 new                 rockIndex;                                  // The index of the rock (to detect how many times we were rocked)
 new                 ttlPinnedDuringTank[MAXPLAYERS + 1];        // The total times we were pinned when the tank was up
@@ -448,7 +447,6 @@ public ScavRoundStart(Handle:event)
     
     bInRound = true;
     tankSpawned = false;
-    tankSpawnedDuringRound = false;
 }
 
 public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
@@ -498,7 +496,6 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
     tankThrow = false;
     
     tankSpawned = false;
-    tankSpawnedDuringRound = false;
 }
 
 public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
@@ -525,7 +522,6 @@ public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
     }
     
     tankSpawned = false;
-    tankSpawnedDuringRound = false;
 }
 
 
@@ -848,7 +844,6 @@ public smokerChoke(Handle:event, const String:name[], bool:dontBroadcast)
 */
 public tankSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
     tankSpawned = true;
-    tankSpawnedDuringRound = true;
 }
 
 /**
@@ -927,7 +922,7 @@ public PrintConsoleReport(client)
                 PrintToConsole(i, bufDetailed);
                 
                 // If the tank spawned during the round, let's output the tank details (and only if the tank isn't up)
-                if (tankSpawnedDuringRound) 
+                if (!tankSpawned) 
                 {
                     PrintToConsole(i, bufTankHeader);
                     PrintToConsole(i, bufTank);
@@ -945,7 +940,7 @@ public PrintConsoleReport(client)
             PrintToConsole(client, bufDetailed);
             
             // If the tank spawned during the round, let's output the tank details
-            if (tankSpawnedDuringRound)  
+            if (!tankSpawned)  
             {
                 PrintToConsole(client, bufTankHeader);
                 PrintToConsole(client, bufTank);
@@ -1376,7 +1371,7 @@ String: GetMVPString()
         Format(sikills,     s_len, "%8d",   iGotKills[i]);
         Format(cikills,     s_len, "%8d",   iGotCommon[i]);
         Format(ciprc,       s_len, "%7.1f", (float(iGotCommon[i]) / float(iTotalCommon)) * 100 );
-        Format(tankdmg,     s_len, "%6d",   tankSpawnedDuringRound ? iDidDamageTank[i] : 0);
+        Format(tankdmg,     s_len, "%6d",   tankSpawned ? iDidDamageTank[i] : 0);
         Format(witchdmg,    s_len, "%6d",   iDidDamageWitch[i]);
         Format(ff,          s_len, "%6d",   iDidFF[i]);
         
