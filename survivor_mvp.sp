@@ -6,6 +6,7 @@
 #include <sdktools_functions>
 #include <left4downtown>
 #include <timers.inc>
+#include <colors>
 
 #define MAX(%0,%1) (((%0) > (%1)) ? (%0) : (%1))
 
@@ -548,14 +549,14 @@ public Action:SurvivorMVP_Cmd(client, args)
     
     printBuffer = GetMVPString();
     PrintConsoleReport(client);
-    
+
     if (client && IsClientConnected(client))
-    {
-        PrintToChat(client, "\x01%s", printBuffer);
+    {   
+        CPrintToChat(client, "{default}%s", printBuffer);
     }
     else
     {
-        PrintToServer("\x01%s", printBuffer);
+        PrintToServer("{default}%s", printBuffer);
     }
 }
 
@@ -574,17 +575,17 @@ public Action:ShowMVPStats_Cmd(client, args)
             if (iTotalDamageAll > 0)
             {
                 if (iBrevityFlags & BREV_PERCENT) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - SI: (\x05%d \x01dmg,\x05 %d \x01kills)\n", iDidDamageAll[client], iGotKills[client]);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - SI: ({olive}%d {default}dmg,{olive} %d {default}kills)\n", iDidDamageAll[client], iGotKills[client]);
                 } else if (iBrevityFlags & BREV_ABSOLUTE) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - SI: (dmg \x04%2.0f%%\x01, kills \x04%.0f%%\x01)\n", (float(iDidDamageAll[client]) / float(iTotalDamageAll)) * 100, (float(iGotKills[client]) / float(iTotalKills)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - SI: (dmg {green}%2.0f%%{default}, kills {green}%.0f%%{default})\n", (float(iDidDamageAll[client]) / float(iTotalDamageAll)) * 100, (float(iGotKills[client]) / float(iTotalKills)) * 100);
                 } else {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - SI: (\x05%d \x01dmg [\x04%.0f%%\x01],\x05 %d \x01kills [\x04%.0f%%\x01])\n", iDidDamageAll[client], (float(iDidDamageAll[client]) / float(iTotalDamageAll)) * 100, iGotKills[client], (float(iGotKills[client]) / float(iTotalKills)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - SI: ({olive}%d {default}dmg [{green}%.0f%%{default}],{olive} %d {default}kills [{green}%.0f%%{default}])\n", iDidDamageAll[client], (float(iDidDamageAll[client]) / float(iTotalDamageAll)) * 100, iGotKills[client], (float(iGotKills[client]) / float(iTotalKills)) * 100);
                 }
                 StrCat(printBuffer, sizeof(printBuffer), tmpBuffer);
             }
             else
             {
-                StrCat(printBuffer, sizeof(printBuffer), "\x01[You] SI: (nada)\n");
+                StrCat(printBuffer, sizeof(printBuffer), "{default}[You] SI: (nada)\n");
             }
         }
         
@@ -593,21 +594,21 @@ public Action:ShowMVPStats_Cmd(client, args)
             if (iTotalCommon > 0)
             {
                 if (iBrevityFlags & BREV_PERCENT) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - CI: (\x05%d \x01common)\n", iGotCommon[client]);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - CI: ({olive}%d {default}common)\n", iGotCommon[client]);
                 } else if (iBrevityFlags & BREV_ABSOLUTE) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - CI: (\x04%.0f%%\x01)\n", (float(iGotCommon[client]) / float(iTotalCommon)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - CI: ({green}%.0f%%{default})\n", (float(iGotCommon[client]) / float(iTotalCommon)) * 100);
                 } else {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - CI: (\x05%d \x01common [\x04%.0f%%\x01])\n", iGotCommon[client], (float(iGotCommon[client]) / float(iTotalCommon)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] You - CI: ({olive}%d {default}common [{green}%.0f%%{default}])\n", iGotCommon[client], (float(iGotCommon[client]) / float(iTotalCommon)) * 100);
                 }
                 StrCat(printBuffer, sizeof(printBuffer), tmpBuffer);
             }
         }
         
-        PrintToChat(client, "\x01%s", printBuffer);
+        CPrintToChat(client, "{default}%s", printBuffer);
         
         // leave this like so for now. might let brevityflags block this too.
         if (!(iBrevityFlags & BREV_FF) && bTrackFF) {
-            PrintToChat(client, "\x01You - FF: (\x05%d \x01friendly dmg [\x04%.0f%%\x01])\n", iDidFF[client], (float(iDidFF[client]) / float(iTotalFF)) * 100);
+            CPrintToChat(client, "{default}You - FF: ({olive}%d {default}friendly dmg [{green}%.0f%%{default}])\n", iDidFF[client], (float(iDidFF[client]) / float(iTotalFF)) * 100);
         }
         
     }
@@ -618,8 +619,8 @@ public Action:delayedMVPPrint(Handle:timer)
     decl String:printBuffer[1024];
     decl String:tmpBuffer[512];
     printBuffer = GetMVPString();
-    PrintToServer("\x01%s", printBuffer);
-    PrintToChatAll("\x01%s", printBuffer);
+    PrintToServer("{default}%s", printBuffer);
+    CPrintToChatAll("{default}%s", printBuffer);
     PrintConsoleReport(0); // to all
     
     // also find the three non-mvp survivors and tell them they sucked
@@ -636,13 +637,13 @@ public Action:delayedMVPPrint(Handle:timer)
         {
             if (IsClientAndInGame(mvp_SI_losers[i]) && !IsFakeClient(mvp_SI_losers[i])) {
                 if (iBrevityFlags & BREV_PERCENT) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - SI: #\x03%d \x01(\x05%d \x01dmg,\x05 %d \x01kills)", (i + 2), iDidDamageAll[mvp_SI_losers[i]], iGotKills[mvp_SI_losers[i]]);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - SI: #{default}%d {default}({olive}%d {default}dmg,{olive} %d {default}kills)", (i + 2), iDidDamageAll[mvp_SI_losers[i]], iGotKills[mvp_SI_losers[i]]);
                 } else if (iBrevityFlags & BREV_ABSOLUTE) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - SI: #\x03%d \x01(dmg \x04%.0f%%\x01, kills \x04%.0f%%\x01)", (i + 2), (float(iDidDamageAll[mvp_SI_losers[i]]) / float(iTotalDamageAll)) * 100, (float(iGotKills[mvp_SI_losers[i]]) / float(iTotalKills)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - SI: #{default}%d {default}(dmg {green}%.0f%%{default}, kills {green}%.0f%%{default})", (i + 2), (float(iDidDamageAll[mvp_SI_losers[i]]) / float(iTotalDamageAll)) * 100, (float(iGotKills[mvp_SI_losers[i]]) / float(iTotalKills)) * 100);
                 } else {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - SI: #\x03%d \x01(\x05%d \x01dmg [\x04%.0f%%\x01],\x05 %d \x01kills [\x04%.0f%%\x01])", (i + 2), iDidDamageAll[mvp_SI_losers[i]], (float(iDidDamageAll[mvp_SI_losers[i]]) / float(iTotalDamageAll)) * 100, iGotKills[mvp_SI_losers[i]], (float(iGotKills[mvp_SI_losers[i]]) / float(iTotalKills)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - SI: #{default}%d {default}({olive}%d {default}dmg [{green}%.0f%%{default}],{olive} %d {default}kills [{green}%.0f%%{default}])", (i + 2), iDidDamageAll[mvp_SI_losers[i]], (float(iDidDamageAll[mvp_SI_losers[i]]) / float(iTotalDamageAll)) * 100, iGotKills[mvp_SI_losers[i]], (float(iGotKills[mvp_SI_losers[i]]) / float(iTotalKills)) * 100);
                 }
-                PrintToChat(mvp_SI_losers[i], "\x01%s", tmpBuffer);
+                CPrintToChat(mvp_SI_losers[i], "{default}%s", tmpBuffer);
             }
         }
     }
@@ -660,13 +661,13 @@ public Action:delayedMVPPrint(Handle:timer)
         {
             if (IsClientAndInGame(mvp_CI_losers[i]) && !IsFakeClient(mvp_CI_losers[i])) {
                 if (iBrevityFlags & BREV_PERCENT) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - CI: #\x03%d \x01(\x05%d \x01kills)", (i + 2), iGotCommon[mvp_CI_losers[i]]);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - CI: #{default}%d {default}({olive}%d {default}kills)", (i + 2), iGotCommon[mvp_CI_losers[i]]);
                 } else if (iBrevityFlags & BREV_ABSOLUTE) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - CI: #\x03%d \x01(kills \x04%.0f%%\x01)", (i + 2), (float(iGotCommon[mvp_CI_losers[i]]) / float(iTotalCommon)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - CI: #{default}%d {default}(kills {green}%.0f%%{default})", (i + 2), (float(iGotCommon[mvp_CI_losers[i]]) / float(iTotalCommon)) * 100);
                 } else {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - CI: #\x03%d \x01(\x05%d \x01kills [\x04%.0f%%\x01])", (i + 2), iGotCommon[mvp_CI_losers[i]], (float(iGotCommon[mvp_CI_losers[i]]) / float(iTotalCommon)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] Your rank - CI: #{default}%d {default}({olive}%d {default}kills [{green}%.0f%%{default}])", (i + 2), iGotCommon[mvp_CI_losers[i]], (float(iGotCommon[mvp_CI_losers[i]]) / float(iTotalCommon)) * 100);
                 }
-                PrintToChat(mvp_CI_losers[i], "\x01%s", tmpBuffer);
+                CPrintToChat(mvp_CI_losers[i], "{default}%s", tmpBuffer);
             }
         }
     }
@@ -684,13 +685,13 @@ public Action:delayedMVPPrint(Handle:timer)
         {
             if (IsClientAndInGame(mvp_FF_losers[i]) && !IsFakeClient(mvp_FF_losers[i])) {
                 if (iBrevityFlags & BREV_PERCENT) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] Your rank - FF: #\x03%d \x01(\x05%d \x01dmg)", (i + 2), iDidFF[mvp_FF_losers[i]]);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] Your rank - FF: #{default}%d {default}({olive}%d {default}dmg)", (i + 2), iDidFF[mvp_FF_losers[i]]);
                 } else if (iBrevityFlags & BREV_ABSOLUTE) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] Your rank - FF: #\x03%d \x01(dmg \x04%.0f%%\x01)", (i + 2), (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] Your rank - FF: #{default}%d {default}(dmg {green}%.0f%%{default})", (i + 2), (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
                 } else {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] Your rank - FF: #\x03%d \x01(\x05%d \x01dmg [\x04%.0f%%\x01])", (i + 2), iDidFF[mvp_FF_losers[i]], (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] Your rank - FF: #{default}%d {default}({olive}%d {default}dmg [{green}%.0f%%{default}])", (i + 2), iDidFF[mvp_FF_losers[i]], (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
                 }
-                PrintToChat(mvp_FF_losers[i], "\x01%s", tmpBuffer);
+                CPrintToChat(mvp_FF_losers[i], "{default}%s", tmpBuffer);
             }
         }
     }
@@ -1169,7 +1170,7 @@ String: GetMVPString()
                 GetClientName(mvp_SI, tmpName, sizeof(tmpName));
                 if (IsFakeClient(mvp_SI))
                 {
-                    StrCat(tmpName, 64, " \x01[BOT]");
+                    StrCat(tmpName, 64, " {default}[BOT]");
                 }
             } else {
                 strcopy(tmpName, 64, sClientName[mvp_SI]);
@@ -1192,7 +1193,7 @@ String: GetMVPString()
                 GetClientName(mvp_Common, tmpName, sizeof(tmpName));
                 if (IsFakeClient(mvp_Common))
                 {
-                    StrCat(tmpName, 64, " \x01[BOT]");
+                    StrCat(tmpName, 64, " {default}[BOT]");
                 }
             } else {
                 strcopy(tmpName, 64, sClientName[mvp_Common]);
@@ -1215,7 +1216,7 @@ String: GetMVPString()
                 GetClientName(mvp_FF, tmpName, sizeof(tmpName));
                 if (IsFakeClient(mvp_FF))
                 {
-                    StrCat(tmpName, 64, " \x01[BOT]");
+                    StrCat(tmpName, 64, " {default}[BOT]");
                 }
             } else {
                 strcopy(tmpName, 64, sClientName[mvp_FF]);
@@ -1240,17 +1241,17 @@ String: GetMVPString()
             if (mvp_SI > 0)
             {
                 if (iBrevityFlags & BREV_PERCENT) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] SI:\x03 %s \x01(\x05%d \x01dmg,\x05 %d \x01kills)\n", mvp_SI_name, iDidDamageAll[mvp_SI], iGotKills[mvp_SI]);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] SI:{default} %s {default}({olive}%d {default}dmg,{olive} %d {default}kills)\n", mvp_SI_name, iDidDamageAll[mvp_SI], iGotKills[mvp_SI]);
                 } else if (iBrevityFlags & BREV_ABSOLUTE) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] SI:\x03 %s \x01(dmg \x04%2.0f%%\x01, kills \x04%.0f%%\x01)\n", mvp_SI_name, (float(iDidDamageAll[mvp_SI]) / float(iTotalDamageAll)) * 100, (float(iGotKills[mvp_SI]) / float(iTotalKills)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] SI:{default} %s {default}(dmg {green}%2.0f%%{default}, kills {green}%.0f%%{default})\n", mvp_SI_name, (float(iDidDamageAll[mvp_SI]) / float(iTotalDamageAll)) * 100, (float(iGotKills[mvp_SI]) / float(iTotalKills)) * 100);
                 } else {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] SI:\x03 %s \x01(\x05%d \x01dmg[\x04%.0f%%\x01],\x05 %d \x01kills [\x04%.0f%%\x01])\n", mvp_SI_name, iDidDamageAll[mvp_SI], (float(iDidDamageAll[mvp_SI]) / float(iTotalDamageAll)) * 100, iGotKills[mvp_SI], (float(iGotKills[mvp_SI]) / float(iTotalKills)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] SI:{default} %s {default}({olive}%d {default}dmg[{green}%.0f%%{default}],{olive} %d {default}kills [{green}%.0f%%{default}])\n", mvp_SI_name, iDidDamageAll[mvp_SI], (float(iDidDamageAll[mvp_SI]) / float(iTotalDamageAll)) * 100, iGotKills[mvp_SI], (float(iGotKills[mvp_SI]) / float(iTotalKills)) * 100);
                 }
                 StrCat(printBuffer, sizeof(printBuffer), tmpBuffer);
             }
             else
             {
-                StrCat(printBuffer, sizeof(printBuffer), "[MVP] SI: \x03(nobody)\x01\n");
+                StrCat(printBuffer, sizeof(printBuffer), "[MVP] SI: {default}(nobody){default}\n");
             }
         }
         
@@ -1259,11 +1260,11 @@ String: GetMVPString()
             if (mvp_Common > 0)
             {
                 if (iBrevityFlags & BREV_PERCENT) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] CI:\x03 %s \x01(\x05%d \x01common)\n", mvp_Common_name, iGotCommon[mvp_Common]);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] CIA:{default} %s {default}({olive}%d {default}common)\n", mvp_Common_name, iGotCommon[mvp_Common]);
                 } else if (iBrevityFlags & BREV_ABSOLUTE) {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] CI:\x03 %s \x01(\x04%.0f%%\x01)\n", mvp_Common_name, (float(iGotCommon[mvp_Common]) / float(iTotalCommon)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] CI:{default} %s {default}({green}%.0f%%{default})\n", mvp_Common_name, (float(iGotCommon[mvp_Common]) / float(iTotalCommon)) * 100);
                 } else {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] CI:\x03 %s \x01(\x05%d \x01common [\x04%.0f%%\x01])\n", mvp_Common_name, iGotCommon[mvp_Common], (float(iGotCommon[mvp_Common]) / float(iTotalCommon)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] CI:{default} %s {default}({olive}%d {default}common [{green}%.0f%%{default}])\n", mvp_Common_name, iGotCommon[mvp_Common], (float(iGotCommon[mvp_Common]) / float(iTotalCommon)) * 100);
                 }
                 StrCat(printBuffer, sizeof(printBuffer), tmpBuffer);
             }
@@ -1281,11 +1282,11 @@ String: GetMVPString()
         else
         {
             if (iBrevityFlags & BREV_PERCENT) {
-                Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] FF:\x03 %s \x01(\x05%d \x01dmg)\n", mvp_FF_name, iDidFF[mvp_FF]);
+                Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] FF:{default} %s {default}({olive}%d {default}dmg)\n", mvp_FF_name, iDidFF[mvp_FF]);
             } else if (iBrevityFlags & BREV_ABSOLUTE) {
-                Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] FF:\x03 %s \x01(\x04%.0f%%\x01)\n", mvp_FF_name, (float(iDidFF[mvp_FF]) / float(iTotalFF)) * 100);
+                Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] FF:{default} %s {default}({green}%.0f%%{default})\n", mvp_FF_name, (float(iDidFF[mvp_FF]) / float(iTotalFF)) * 100);
             } else {
-                Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] FF:\x03 %s \x01(\x05%d \x01dmg [\x04%.0f%%\x01])\n", mvp_FF_name, iDidFF[mvp_FF], (float(iDidFF[mvp_FF]) / float(iTotalFF)) * 100);
+                Format(tmpBuffer, sizeof(tmpBuffer), "[LVP] FF:{default} %s {default}({olive}%d {default}dmg [{green}%.0f%%{default}])\n", mvp_FF_name, iDidFF[mvp_FF], (float(iDidFF[mvp_FF]) / float(iTotalFF)) * 100);
             }
             StrCat(printBuffer, sizeof(printBuffer), tmpBuffer);
         }
