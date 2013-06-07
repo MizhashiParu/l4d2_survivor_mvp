@@ -1371,7 +1371,7 @@ String: GetMVPString()
         Format(sikills,     s_len, "%8d",   iGotKills[i]);
         Format(cikills,     s_len, "%8d",   iGotCommon[i]);
         Format(ciprc,       s_len, "%7.1f", (float(iGotCommon[i]) / float(iTotalCommon)) * 100 );
-        Format(tankdmg,     s_len, "%6d",   tankSpawned ? iDidDamageTank[i] : 0);
+        Format(tankdmg,     s_len, "%6d",   tankSpawned ? 0 : iDidDamageTank[i]);
         Format(witchdmg,    s_len, "%6d",   iDidDamageWitch[i]);
         Format(ff,          s_len, "%6d",   iDidFF[i]);
         
