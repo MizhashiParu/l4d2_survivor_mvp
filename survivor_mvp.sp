@@ -900,7 +900,7 @@ public PrintConsoleReport(client)
     decl String:bufDetailed[CONBUFSIZELARGE];
     
     Format(bufDetailedHeader, CONBUFSIZELARGE, "\n");
-    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Detailed Stats (for information on each stat see http://)                                                                              |\n", bufDetailedHeader);
+    Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Detailed Stats (pops = boomers killed before booming anyone | pinned = time pinned by SI | damage done to SI classes)                  |\n", bufDetailedHeader);
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-----------------|\n", bufDetailedHeader);
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s| Name                 | Pinned   | Pills   | DamageRec| Smoker   | Hunter   | Boomer  | Spitter  | Charger  | Jockey  | Pops            |\n", bufDetailedHeader);
     Format(bufDetailedHeader, CONBUFSIZELARGE, "%s|----------------------|----------|---------|----------|----------|----------|---------|----------|----------|---------|-----------------|", bufDetailedHeader);
