@@ -545,13 +545,19 @@ public Action:Say_Cmd(client, args)
 public Action:SurvivorMVP_Cmd(client, args)
 {
     decl String:printBuffer[1024];
+    new String:strLines[8][192];
     
     printBuffer = GetMVPString();
     PrintConsoleReport(client);
     
+    // PrintToChat has a max length. Split it in to individual lines to output separately
+    new intPieces = ExplodeString(printBuffer, "\n", strLines, sizeof(strLines), sizeof(strLines[]));
+    
     if (client && IsClientConnected(client))
     {
-        PrintToChat(client, "\x01%s", printBuffer);
+        for (new i = 0; i < intPieces; i++) {
+            PrintToChat(client, "\x01%s", strLines[i]);
+        }
     }
     else
     {
@@ -617,9 +623,17 @@ public Action:delayedMVPPrint(Handle:timer)
 {
     decl String:printBuffer[1024];
     decl String:tmpBuffer[512];
+    new String:strLines[8][192];
+    
     printBuffer = GetMVPString();
     PrintToServer("\x01%s", printBuffer);
-    PrintToChatAll("\x01%s", printBuffer);
+    
+    // PrintToChatAll has a max length. Split it in to individual lines to output separately
+    new intPieces = ExplodeString(printBuffer, "\n", strLines, sizeof(strLines), sizeof(strLines[]));
+    for (new i = 0; i < intPieces; i++) {
+        PrintToChatAll("\x01%s", strLines[i]);
+    }
+    
     PrintConsoleReport(0); // to all
     
     // also find the three non-mvp survivors and tell them they sucked
