@@ -8,7 +8,7 @@ s more, it was incorrectly showing tank damage even when it was being collected 
 A lot of the code needs to be cleaned up and refactored. I suppose after all of the new features are implemented that's what should be done, however if someone else wants to have a crack please feel free! I personally have plans to build on this plugin (though most likely I'll create a new plugin which takes advantage of the author's original natives, whilst also adding in a few of my own), that records statistics across the server, so you can see a user's history. I've been meaning to write something like that for my own server for a while, so we can implement some form of ranking algorithm and see what players aren't pulling their weight. 
 
 ##Change log:
-  - 19/6/13
+  - __19/6/13__
     - Resolve MVP printout being cut off with FF damage and long names.
     - Resolve issue with tank stats being displayed when tank is up.
   - Track witch and tank damage regardless of whether or not we're including it in our mvp stat.
