@@ -633,13 +633,13 @@ stock PrintLoserz(bool:bSolo, client)
                 {
                     if (mvp_CI_losers[i] == client)
                     {
-                        Format(tmpBuffer, sizeof(tmpBuffer), "{blue}你排名 {green}清尸狂人{default}: {olive}#%d {blue}({default}%d {green}击杀 {blue}[{default}%.0f%%{blue}])", (i + 2), iGotCommon[mvp_CI_losers[i]], (float(iGotCommon[mvp_CI_losers[i]]) / float(iTotalCommon)) * 100);
+                        Format(tmpBuffer, sizeof(tmpBuffer), "{blue}你排名 {green}清尸狂人: {olive}#%d {blue}({default}%d {green}击杀 {blue}[{default}%.0f%%{blue}])", (i + 2), iGotCommon[mvp_CI_losers[i]], (float(iGotCommon[mvp_CI_losers[i]]) / float(iTotalCommon)) * 100);
                         CPrintToChat(mvp_CI_losers[i], "%s", tmpBuffer);
                     }
                 }
                 else
                 {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "{blue}你排名 {green}清尸狂人{default}: {olive}#%d {blue}({default}%d {green}击杀 {blue}[{default}%.0f%%{blue}])", (i + 2), iGotCommon[mvp_CI_losers[i]], (float(iGotCommon[mvp_CI_losers[i]]) / float(iTotalCommon)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "{blue}你排名 {green}清尸狂人: {olive}#%d {blue}({default}%d {green}击杀 {blue}[{default}%.0f%%{blue}])", (i + 2), iGotCommon[mvp_CI_losers[i]], (float(iGotCommon[mvp_CI_losers[i]]) / float(iTotalCommon)) * 100);
                     CPrintToChat(mvp_CI_losers[i], "%s", tmpBuffer);
                 }
             }
@@ -663,13 +663,13 @@ stock PrintLoserz(bool:bSolo, client)
                 {
                     if (mvp_FF_losers[i] == client)
                     {
-                        Format(tmpBuffer, sizeof(tmpBuffer), "{blue}你排名 {green}黑枪帝{default}: {olive}#%d {blue}({default}%d {green}友伤 {blue}[{default}%.0f%%{blue}])", (i + 2), iDidFF[mvp_FF_losers[i]], (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
+                        Format(tmpBuffer, sizeof(tmpBuffer), "{blue}你排名 {green}黑枪帝: {olive}#%d {blue}({default}%d {green}友伤 {blue}[{default}%.0f%%{blue}])", (i + 2), iDidFF[mvp_FF_losers[i]], (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
                         CPrintToChat(mvp_FF_losers[i], "%s", tmpBuffer);
                     }
                 }
                 else
                 {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "{blue}你排名 {green}黑枪帝{default}: {olive}#%d {blue}({default}%d {green}友伤 {blue}[{default}%.0f%%{blue}])", (i + 2), iDidFF[mvp_FF_losers[i]], (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "{blue}你排名 {green}黑枪帝: {olive}#%d {blue}({default}%d {green}友伤 {blue}[{default}%.0f%%{blue}])", (i + 2), iDidFF[mvp_FF_losers[i]], (float(iDidFF[mvp_FF_losers[i]]) / float(iTotalFF)) * 100);
                     CPrintToChat(mvp_FF_losers[i], "%s", tmpBuffer);
                 }
             }
