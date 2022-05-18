@@ -1142,7 +1142,7 @@ void GetMVPString(char[] printBuffer, const int iSize)
                 } else if (iBrevityFlags & BREV_ABSOLUTE) {
                     Format(tmpBuffer, sizeof(tmpBuffer), "[MVP] 清尸狂人:\x03 %s \x01(\x04%.0f%%\x01)\n", mvp_Common_name, (float(iGotCommon[mvp_Common]) / float(iTotalCommon)) * 100);
                 } else {
-                    Format(tmpBuffer, sizeof(tmpBuffer), "{blue}[{default}MVP{blue}] 清尸狂人: {olive}%s {blue}({default}%d {green}common {blue}[{default}%.0f%%{blue}])\n", mvp_Common_name, iGotCommon[mvp_Common], (float(iGotCommon[mvp_Common]) / float(iTotalCommon)) * 100);
+                    Format(tmpBuffer, sizeof(tmpBuffer), "{blue}[{default}MVP{blue}] 清尸狂人: {olive}%s {blue}({default}%d {green}僵尸 {blue}[{default}%.0f%%{blue}])\n", mvp_Common_name, iGotCommon[mvp_Common], (float(iGotCommon[mvp_Common]) / float(iTotalCommon)) * 100);
                 }
                 StrCat(printBuffer, iSize, tmpBuffer);
             }
